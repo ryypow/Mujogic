@@ -1,0 +1,37 @@
+# Core ML Libraries
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.24.0
+
+# Data Processing
+pandas>=2.0.0
+scikit-learn>=1.3.0
+opencv-python>=4.8.0
+Pillow>=10.0.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Experiment Tracking
+tensorboard>=2.13.0
+
+# Configuration
+PyYAML>=6.0
+
+# Progress Bars
+tqdm>=4.65.0
+
+# Jupyter
+jupyter>=1.0.0
+ipykernel>=6.25.0
+
+# Development
+pytest>=7.4.0
+black>=23.7.0
+flake8>=6.1.0
+
+# Optional: Advanced Features
+# albumentations>=1.3.0  # Advanced image augmentation
+# wandb>=0.15.0  # Weights & Biases experiment tracking
+# hydra-core>=1.3.0  # Advanced configuration management
