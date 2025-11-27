@@ -11,12 +11,12 @@ from simulation import Simulation
 MAX_EPISODE_STEPS = 300
 
 class CanRotateEnv(gym.Env):
-    metadata = {'render_modes': ['human'], 'render_fps': 30}
+    metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30}
 
     def __init__(self, render_mode=None, target_degrees):
         super(CanRotateEnv, self).__init__()
 
-        #NEW: for tracking the cubes rotation progress
+        #for tracking the cubes rotation progress
         #used in reward function to compare to euler rotation to the previous
         self.cube_rotation_prev = None
 
@@ -206,10 +206,7 @@ class CanRotateEnv(gym.Env):
     def step(self, action):
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
         self.sim.move_gripper_to_angles(target_angles, 0.5) #
-
-        if self.render_mode != "headless":
-            self.viewer.sync()
-
+        
         self.step_count += 1
         
         observation = self._get_obs()
@@ -217,7 +214,7 @@ class CanRotateEnv(gym.Env):
         #Get cubes orientation, get euler angle via scipy.Rotation
         cube_quart = observation[-4:]
         r = Rotation.from_quat(cube_quart) #reminder: working with radians
-        euler = r.as_euler('xyz')
+        euler = r.as_euler('xyz') #x,y,z coordinates
         z_rotation = euler[2]
 
         #UPDATED: passing the new cube rotation and the rotation history into reward function
@@ -240,14 +237,25 @@ class CanRotateEnv(gym.Env):
             try:
                 if self.viewer.is_running():
                     self.viewer.sync()
+                               
                 else:
                     # If the user closed the window, we must handle it
                     self.close() # Properly close the viewer resources
                     self.viewer = mujoco.viewer.launch(self.sim.model, self.sim.data) # And re-launch it
+            
             except Exception:
                 # This can happen if the viewer was closed abruptly
                 self.viewer = mujoco.viewer.launch(self.sim.model, self.sim.data)
-    
+
+
+        #logic to capture PIL snaps for termination/truncation situations to observe cube
+        elif self.render_mode == "rgb_array":
+            renderer = mujoco.Renderer(self.sim.model, height=480, width=640)
+            renderer.update_scene(self.sim.data)
+            frame = renderer.render()
+            renderer.close()
+            return frame
+        
     def close(self):
         if self.viewer:
             self.viewer.close()

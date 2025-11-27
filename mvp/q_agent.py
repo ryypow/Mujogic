@@ -5,8 +5,8 @@ based on: https://www.learndatasci.com/tutorials/reinforcement-q-learning-scratc
 import sys
 import os
 from discrete_translator import ActionTranslator
-env_path = os.path.abspath('./env')
-sys.path.append(env_path)
+#env_path = os.path.abspath('./env')
+#sys.path.append(env_path)
 
 import numpy as np
 import mujoco
@@ -141,7 +141,7 @@ env = ActionTranslator(base_env)
 # training loop
 #==========================
 print("Starting training...")
-os.makedirs("termination snaps", exist_ok=True) #collect images of termination
+os.makedirs("termination_snap", exist_ok=True) #collect images of termination
 reward_tracker = []
 
 for episode in range(NUM_EPISODES):
