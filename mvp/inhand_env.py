@@ -13,14 +13,21 @@ MAX_EPISODE_STEPS = 300
 class CanRotateEnv(gym.Env):
     metadata = {'render_modes': ['human'], 'render_fps': 30}
 
-    def __init__(self, render_mode=None, target_degrees = None):
+    def __init__(self, render_mode=None, target_degrees):
         super(CanRotateEnv, self).__init__()
 
         #NEW: for tracking the cubes rotation progress
         #used in reward function to compare to euler rotation to the previous
         self.cube_rotation_prev = None
 
+
+
         self.target_rotation = np.deg2rad(target_degrees)
+        self.target_tolerance = np.deg2rad(5)
+
+
+
+
 
         # Initialize simulation and get object IDs
         self.sim = Simulation(
@@ -61,8 +68,8 @@ class CanRotateEnv(gym.Env):
         return np.concatenate([finger_qpos, object_pose])
 
     def _calculate_reward(self, cube_rotation_new, cube_rotation_prev):
-        TARGET_ROTATION = np.pi / 2 #1.57 RAD
-        TARGET_TOLERANCE = np.deg2rad(10) #10 degree tolerance from target rotation
+        TARGET_ROTATION = self.target_rotation #target rotation passed into canRotateEnv
+        TARGET_TOLERANCE = self.target_tolerance #5 deg tolerance
 
         #current rotation state
         obj_vel = np.zeros(6)
@@ -144,11 +151,11 @@ class CanRotateEnv(gym.Env):
         palm_z_pos = self.sim.data.site_xpos[self.site_id][2] 
 
         #Terminate if target position achieved
-        TARGET_POS = np.pi /2
-        TOLERANCE = np.deg2rad(5)
+        TARGET_ROTATION = self.target_rotation #target rotation passed into canRotateEnv
+        TARGET_TOLERANCE = self.target_tolerance #5 deg tolerance
 
         #If target achieved, terminated = true
-        if abs(TARGET_POS - z_rotation) < TOLERANCE:
+        if abs(TARGET_ROTATION - z_rotation) < TARGET_TOLERANCE:
             return True
         
         #if cube dropped or max steps exceeded, terminate = true
