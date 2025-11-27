@@ -11,7 +11,7 @@ sys.path.append(env_path)
 import numpy as np
 import mujoco
 from scipy.spatial.transform import Rotation
-
+from PIL import Image
 from inhand_env import CanRotateEnv
 
 
@@ -134,13 +134,14 @@ print("\nQ-table shape: ", q_table.shape)
 # initialize environment and the discrete translator
 #==========================
 
-base_env = CanRotateEnv(render_mode="headless", target_degrees=GOAL)
+base_env = CanRotateEnv(render_mode="rgb_array", target_degrees=GOAL)
 env = ActionTranslator(base_env)
 
 #==========================
 # training loop
 #==========================
 print("Starting training...")
+os.makedirs("termination snaps", exist_ok=True) #collect images of termination
 reward_tracker = []
 
 for episode in range(NUM_EPISODES):
@@ -170,6 +171,9 @@ for episode in range(NUM_EPISODES):
 
         #escape if terminated/truncated
         if terminated or truncated:
+            frame = env.render()
+            img = Image.fromarray(frame)
+            img.save(f"termination_snap/episode_{episode}.png")
             break
 
         #translate new positional values into the discrete bins
@@ -197,7 +201,7 @@ for episode in range(NUM_EPISODES):
     #adjust policy
     EPSILON = max(MIN_EPSILON, EPSILON * EPSILON_DECAY)
 
-    if (episode + 1) % 50 == 0:
+    if (episode + 1) % 10 == 0:
         average_reward = np.mean(reward_tracker[-50:])
         print(f"Episode {episode+1}/{NUM_EPISODES} - Avg Reward: {average_reward:.2f} - Epsilon: {EPSILON:.3f}")
 
