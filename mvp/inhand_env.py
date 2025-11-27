@@ -13,7 +13,7 @@ MAX_EPISODE_STEPS = 300
 class CanRotateEnv(gym.Env):
     metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30}
 
-    def __init__(self, render_mode=None, target_degrees):
+    def __init__(self, target_degrees, render_mode=None):
         super(CanRotateEnv, self).__init__()
 
         #for tracking the cubes rotation progress
@@ -198,15 +198,18 @@ class CanRotateEnv(gym.Env):
 
         mujoco.mj_forward(self.sim.model, self.sim.data)
 
-        if self.render_mode != "headless":
-            self.viewer.sync()
+       # if self.render_mode != "headless":
+        #    self.viewer.sync()
         
         return self._get_obs(), {}
 
     def step(self, action):
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
         self.sim.move_gripper_to_angles(target_angles, 0.5) #
-        
+
+        if self.render_mode != "headless" and self.viewer: #only syncs when in human mode
+            self.viewer.sync()        
+
         self.step_count += 1
         
         observation = self._get_obs()

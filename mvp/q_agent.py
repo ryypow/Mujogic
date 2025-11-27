@@ -115,12 +115,12 @@ NUM_ACTIONS = 3 #Action 0 = grasp, action 1 = rotate, action 2 = hold (0.0 -> cu
 LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
 DISCOUNT = 0.95 #GAMMA -> future reward importance
 EPSILON = 1.0 #high epsilon = 100% exploration rate
-EPSILON_DECAY = 0.99 #the rate at which exploration will be reduced, prioritizing exploitation
+EPSILON_DECAY = 0.999 #the rate at which exploration will be reduced, prioritizing exploitation
 MIN_EPSILON = 0.01 #Always explore at least 1%
 NUM_EPISODES = 1000 #EPISODES TO TRAIN
 MAX_STEPS = 300
 DEVICE = 'cpu'
-GOAL = [90,180,270,360]
+GOAL = 90 #[90,180,270,360]
 
 #==========================
 # INITIALIZE THE Q-TABLE: 9 rows/states, 2 columns/actions
@@ -134,7 +134,7 @@ print("\nQ-table shape: ", q_table.shape)
 # initialize environment and the discrete translator
 #==========================
 
-base_env = CanRotateEnv(render_mode="rgb_array", target_degrees=GOAL)
+base_env = CanRotateEnv(GOAL, render_mode="headless")
 env = ActionTranslator(base_env)
 
 #==========================
@@ -171,9 +171,9 @@ for episode in range(NUM_EPISODES):
 
         #escape if terminated/truncated
         if terminated or truncated:
-            frame = env.render()
-            img = Image.fromarray(frame)
-            img.save(f"termination_snap/episode_{episode}.png")
+            #frame = env.render()
+            #img = Image.fromarray(frame)
+            #img.save(f"termination_snap/episode_{episode}.png")
             break
 
         #translate new positional values into the discrete bins
