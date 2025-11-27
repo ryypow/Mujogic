@@ -110,8 +110,8 @@ def state_translator(observation, env):
 # training parameters
 #===========================
 
-NUM_STATES = 9 #3 dist_bin's * 3 speed_bin's
-NUM_ACTIONS = 2 #Action 0 = grasp, action 1 = rotate
+NUM_STATES = 36 #3 dist_bin's * 3 speed_bin's * 4 progress_bin's
+NUM_ACTIONS = 3 #Action 0 = grasp, action 1 = rotate, action 2 = hold (0.0 -> current position)
 LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
 DISCOUNT = 0.95 #GAMMA -> future reward importance
 EPSILON = 1.0 #high epsilon = 100% exploration rate
@@ -120,6 +120,7 @@ MIN_EPSILON = 0.01 #Always explore at least 1%
 NUM_EPISODES = 1000 #EPISODES TO TRAIN
 MAX_STEPS = 300
 DEVICE = 'cpu'
+GOAL = [90,180,270,360]
 
 #==========================
 # INITIALIZE THE Q-TABLE: 9 rows/states, 2 columns/actions
@@ -133,7 +134,7 @@ print("\nQ-table shape: ", q_table.shape)
 # initialize environment and the discrete translator
 #==========================
 
-base_env = CanRotateEnv(render_mode="headless")
+base_env = CanRotateEnv(render_mode="headless", target_degrees=GOAL)
 env = ActionTranslator(base_env)
 
 #==========================
@@ -200,3 +201,5 @@ for episode in range(NUM_EPISODES):
         average_reward = np.mean(reward_tracker[-50:])
         print(f"Episode {episode+1}/{NUM_EPISODES} - Avg Reward: {average_reward:.2f} - Epsilon: {EPSILON:.3f}")
 
+np.save('q_table.npy', q_table)
+print("model saved as q_table.npy")
