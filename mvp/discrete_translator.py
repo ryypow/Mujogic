@@ -28,6 +28,9 @@ class ActionTranslator(gym.ActionWrapper):
             continuous[0:8] = 0.03 #finger 1 and finger 2 joints
             continuous[8:16] = -0.03 #finger 3 and thumb joints
 
+        elif act == 2: #hold at target
+            continuous[:] = 0.0 #this will keep the fingers in their current position, stopping rotation
+
         return continuous
     
     
