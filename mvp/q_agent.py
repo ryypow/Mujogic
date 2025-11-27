@@ -10,6 +10,7 @@ sys.path.append(env_path)
 
 import numpy as np
 import mujoco
+from scipy.spatial.transform import Rotation
 
 from inhand_env import CanRotateEnv
 
@@ -26,9 +27,31 @@ def state_translator(observation, env):
         -Rotation speed: not, slow, fast
     """
 
-    cube_position = observation[16:19] 
     base_env = env.unwrapped #Gym stores the unwrapped environment in .unwrapped -> needed for palm position
+
+
+    # ==== discrete bin for progress towards goal
+    cube_quart = observation[-4:] #quartnerion orientatoin for cube
+    r = Rotation.from_quat(cube_quart) #reminder: working with radians
+    euler = r.as_euler('xyz') #x,y,z coordinates
+    z_rotation = euler[2]    
+
+    goal = base_env.unwrapped.target_rotation
+    goal_progress = abs(goal - z_rotation)
+
+    if goal_progress > np.deg2rad(60):
+        progress_bin = 0 #far from goal
+    elif goal_progress > np.deg2rad(30):
+        progress_bin = 1 #getting there
+    elif goal_progress > np.deg2rad(10):
+        progress_bin = 2 #almost there
+    else:
+        progress_bin = 3 #winner winner chicken dinner
+
+
+    #=== disrete bin for the distance from the cube to the palm
     palm_position = base_env.sim.data.site_xpos[base_env.site_id] #from simulator.data MjData object
+    cube_position = observation[16:19]
 
     #pythagorean theorem between cube and palm for straight-line distance
     cube_distance_fromPalm = np.linalg.norm(cube_position - palm_position)
@@ -41,6 +64,8 @@ def state_translator(observation, env):
     else:
         dist_bin = 2 #far distance - cube likely fell
 
+
+    #==== discrete bin for speed
     #rotation velocity - from env.calculate_reward()
     obj_vel = np.zeros(6)
     mujoco.mj_objectVelocity(base_env.sim.model, base_env.sim.data, mujoco.mjtObj.mjOBJ_BODY, base_env.obj_body_id, obj_vel, 0)
@@ -53,7 +78,8 @@ def state_translator(observation, env):
         speed_bin = 1 #spinningslow
     else:
         speed_bin = 2 #spinning fast
-    
+
+    """   
     #the state features are combined to form the state ID's
     state_map = {
          (0,0): 0, #the cube is close to the palm and not spinning
@@ -66,8 +92,17 @@ def state_translator(observation, env):
          (2,1): 7,#the cube is far from the palm and spinning slowly
          (2,2): 8#the cube is far from the palm and spinning fastly
      }
-    
+
     state_id = state_map[(dist_bin, speed_bin)]
+    """
+
+    #changed from state map to 3D index
+    #progress bin has 4 values
+    #dist bin has 3 values
+    #speed bin has 3 values
+    #dist bin multiplied by the speed_bin*progress_bin
+    #speed bin is multiplied by the amount of progress_bin options
+    state_id = dist_bin * 12 + speed_bin * 4 + progress_bin
 
     return state_id
 
