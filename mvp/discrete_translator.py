@@ -18,6 +18,7 @@ class ActionTranslator(gym.ActionWrapper):
         two discrete actions:
             - action 0 = grasp, which closes all fingers
             - action 1 = rotate, which makes half of the joints close and half open
+            - action 2 = hold, keeps jpoints in current position
         """
         continuous = np.zeros(16)
 
@@ -30,7 +31,7 @@ class ActionTranslator(gym.ActionWrapper):
 
         elif act == 2: #hold at target
             continuous[:] = 0.0 #this will keep the fingers in their current position, stopping rotation
-
+            #NOTE: this may not work due to the momentum of the cubes rotation
         return continuous
     
     
