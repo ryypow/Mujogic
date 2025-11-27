@@ -13,12 +13,14 @@ MAX_EPISODE_STEPS = 300
 class CanRotateEnv(gym.Env):
     metadata = {'render_modes': ['human'], 'render_fps': 30}
 
-    def __init__(self, render_mode=None):
+    def __init__(self, render_mode=None, target_degrees = None):
         super(CanRotateEnv, self).__init__()
 
         #NEW: for tracking the cubes rotation progress
         #used in reward function to compare to euler rotation to the previous
         self.cube_rotation_prev = None
+
+        self.target_rotation = np.deg2rad(target_degrees)
 
         # Initialize simulation and get object IDs
         self.sim = Simulation(
