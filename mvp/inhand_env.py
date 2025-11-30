@@ -192,26 +192,18 @@ class CanRotateEnv(gym.Env):
 
         mujoco.mj_forward(self.sim.model, self.sim.data)
 
-        q_open_angles = np.array([
-        0.8, 0.8, 0.8, 0.8,  # Finger 1
-        0.8, 0.8, 0.8, 0.8,  # Finger 2
-        0.9, 0.8, 0.9, 0.8,  # Finger 3
-        0.8, 0.8, 0.8, 0.8   # Thumb
-        ]) 
+        for _ in range(20):
+            mujoco.mj_step(self.sim.model, self.sim.data) #
 
-
+        q_open_angles = np.array([1.0, 0.3, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.3, 1.0, 1.3, 1.0, 0.8, 1.3, 0.8, 0.5]) #
         self.sim.set_joint_positions(self.sim.hand_joint_ids, q_open_angles) #
         for i, act_id in enumerate(self.sim.hand_act_ids):
             self.sim.data.ctrl[act_id] = q_open_angles[i] #
 
         mujoco.mj_forward(self.sim.model, self.sim.data)
 
-        for _ in range(20):
-            mujoco.mj_step(self.sim.model, self.sim.data) #
-
-        self.cube_rotation_prev = None
-       # if self.render_mode != "headless":
-        #    self.viewer.sync()
+        if self.render_mode != "headless":
+            self.viewer.sync()
         
         return self._get_obs(), {}
 
