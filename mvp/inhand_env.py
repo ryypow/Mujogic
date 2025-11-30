@@ -92,7 +92,7 @@ class CanRotateEnv(gym.Env):
 
         #Bonus for rotating the cube within the tolerance bounds (+- 10 degrees)
         if current_distance < TARGET_TOLERANCE:
-            nearTarget_bonus = 100.0
+            nearTarget_bonus = 20.0
         else:
             nearTarget_bonus = 0.0
         
