@@ -97,7 +97,7 @@ MIN_EPSILON = 0.01 #Always explore at least 1%
 NUM_EPISODES = 2000 #EPISODES TO TRAIN
 MAX_STEPS = 300
 DEVICE = 'cpu'
-GOAL = 30 #Start small, increase once agent learns (30->45->60->90)
+GOAL = 90 #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
