@@ -29,7 +29,10 @@ def state_translator(observation, env):
     z_rotation = euler[2]    
 
     goal = base_env.target_rotation
-    goal_progress = abs(goal - z_rotation)
+    goal_progress = goal - z_rotation
+
+    #new
+    direction_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
 
     if goal_progress > np.deg2rad(30):
         progress_bin = 0 #far from goal
@@ -76,7 +79,7 @@ def state_translator(observation, env):
     else:
         speed_bin = 2 #rotating fast
 
-    state_id = grasp_bin * 12 + speed_bin * 4 + progress_bin
+    state_id = direction_bin * 36 + grasp_bin * 12 + speed_bin * 4 + progress_bin
 
     return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
@@ -84,7 +87,7 @@ def state_translator(observation, env):
 # training parameters
 #===========================
 
-NUM_STATES = 36 #3 grasp_bin's * 3 speed_bin's * 4 progress_bin's
+NUM_STATES = 72 #2 directions, 3 grasp, 3 speed, 4 progress
 NUM_ACTIONS = 5
 LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
 DISCOUNT = 0.95 #GAMMA -> future reward importance
@@ -94,7 +97,7 @@ MIN_EPSILON = 0.01 #Always explore at least 1%
 NUM_EPISODES = 1000 #EPISODES TO TRAIN
 MAX_STEPS = 300
 DEVICE = 'cpu'
-GOAL = 90 #[90,180,270,360]
+GOAL = 30 #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
