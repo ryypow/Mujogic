@@ -22,17 +22,19 @@ class ActionTranslator(gym.ActionWrapper):
         """
         continuous = np.zeros(16)
 
-        if act == 0: #strong grasp
-            continuous[:] = 0.05
+        if act == 0: #strong grasp - close all
+            continuous[:] = 0.03
         
-        elif act == 1: #soft grasp
-            continuous[:] = 0.01
+        elif act == 1: #strong release - open all
+            continuous[:] = -0.03
 
-        elif act == 2: #strong rotate
-            continuous[0:4] = 0.05 #finger 1 and finger 2 joints
-            continuous[4:8] = 0.01 #finger 3 and thumb joints
+        elif act == 2: #rotation - testing finger2 as the anchor and 
+            continuous[0:4] = -0.03 #finger1 opens
+            continuous[4:8] = 0.00 #finger2 is anchored, no movement from current pos
+            continuous[8:12] = 0.03 #finger3 closes and should push the cube
+            continuous[12:16] = 0.01 #thumb closes slightly
 
-        elif act == 2: #hold at target
+        elif act == 3: #hold at target
             continuous[:] = 0.0 #this will keep the fingers in their current position, stopping rotation
             #NOTE: this may not work due to the momentum of the cubes rotation
 

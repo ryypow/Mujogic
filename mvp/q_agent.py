@@ -16,16 +16,6 @@ from inhand_env import CanRotateEnv
 
 
 def state_translator(observation, env):
-    """
-    Convert the 23 continuous values into 9 discrete state ID's
-        23 = 16 joints + 3 object position values + 4 cube orientation values
-            -The joints are the first 16 indices
-            -Cube position is indices 16,17,18
-            -Cube orientation is indices 19,20,21,22
-    Two state features and their discrete bins:
-        -The distance from the cube to the palm: close, medium, far
-        -Rotation speed: not, slow, fast
-    """
 
     base_env = env.unwrapped #Gym stores the unwrapped environment in .unwrapped -> needed for palm position
 
@@ -36,48 +26,53 @@ def state_translator(observation, env):
     euler = r.as_euler('xyz') #x,y,z coordinates
     z_rotation = euler[2]    
 
-    goal = base_env.unwrapped.target_rotation
+    goal = base_env.target_rotation
     goal_progress = abs(goal - z_rotation)
 
-    if goal_progress > np.deg2rad(90):
+    if goal_progress > np.deg2rad(30):
         progress_bin = 0 #far from goal
-    elif goal_progress > np.deg2rad(45):
+    elif goal_progress > np.deg2rad(15):
         progress_bin = 1 #getting there
     elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
         progress_bin = 2 #acceptable
     else:
         progress_bin = 3 #winner winner chicken dinner
 
-
-    #=== disrete bin for the distance from the cube to the palm
-    palm_position = base_env.sim.data.site_xpos[base_env.site_id] #from simulator.data MjData object
-    cube_position = observation[16:19]
-
-    #pythagorean theorem between cube and palm for straight-line distance
-    cube_distance_fromPalm = np.linalg.norm(cube_position - palm_position)
-
-    #distance bins - FYI: the cube is initialized 0.075 above the palm when the sim begins
-    if cube_distance_fromPalm < 0.05:
-        dist_bin = 0 #close
-    elif cube_distance_fromPalm < 0.10:
-        dist_bin = 1 #medium distance
-    else:
-        dist_bin = 2 #far distance - cube likely fell
+    #testing grasp strength - fingers in contact (from reward function)
+    fingers_in_contact = set()  # the reward function uses a set
+    
+    for i in range(base_env.sim.data.ncon):
+        contact = base_env.sim.data.contact[i]
+        geom1, geom2 = contact.geom1, contact.geom2
+        
+        if geom1 in base_env.fingertip_geom_ids and geom2 == base_env.can_geom_id:
+            fingers_in_contact.add(geom1)
+        elif geom2 in base_env.fingertip_geom_ids and geom1 == base_env.can_geom_id:
+            fingers_in_contact.add(geom2)
+    
+    num_fingers = len(fingers_in_contact)
+    
+    if num_fingers <= 1:
+        grasp_bin = 0  # weak
+    elif num_fingers == 2:
+        grasp_bin = 1  # stable
+    else:  # >= 3
+        grasp_bin = 2  # strong
 
 
     #==== discrete bin for speed
     #rotation velocity - from env.calculate_reward()
     obj_vel = np.zeros(6)
     mujoco.mj_objectVelocity(base_env.sim.model, base_env.sim.data, mujoco.mjtObj.mjOBJ_BODY, base_env.obj_body_id, obj_vel, 0)
-    angular_velocity_z = obj_vel[2]
+    angular_velocity_z = abs(obj_vel[2]) #spin speed
 
     #rotation speed bins - unsure about actual speed, adjust accordingly TODO.txt
-    if angular_velocity_z < 0.5:
+    if angular_velocity_z < 0.1:
         speed_bin = 0 #not spinning
-    elif angular_velocity_z < 2.0:
-        speed_bin = 1 #spinningslow
+    elif angular_velocity_z < 0.5:
+        speed_bin = 1 #rotating
     else:
-        speed_bin = 2 #spinning fast
+        speed_bin = 2 #rotating fast
 
     """   
     #the state features are combined to form the state ID's
@@ -102,7 +97,7 @@ def state_translator(observation, env):
     #speed bin has 3 values
     #dist bin multiplied by the speed_bin*progress_bin
     #speed bin is multiplied by the amount of progress_bin options
-    state_id = dist_bin * 12 + speed_bin * 4 + progress_bin
+    state_id = grasp_bin * 12 + speed_bin * 4 + progress_bin
 
     return state_id
 
