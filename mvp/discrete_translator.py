@@ -11,8 +11,8 @@ class ActionTranslator(gym.ActionWrapper):
         super().__init__(env)
         #define the discrete action spaces
         self.action_space = spaces.Discrete(5)
-        self.strong_movement = 0.01
-        self.weak_movement = 0.005
+        self.strong_movement = 0.03
+        self.weak_movement = 0.015
 
     def action(self, act):
         continuous = np.zeros(16)
