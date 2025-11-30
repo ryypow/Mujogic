@@ -90,11 +90,11 @@ def state_translator(observation, env):
 NUM_STATES = 72 #2 directions, 3 grasp, 3 speed, 4 progress
 NUM_ACTIONS = 5
 LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
-DISCOUNT = 0.95 #GAMMA -> future reward importance
+DISCOUNT = 0.99 #GAMMA -> future reward importance
 EPSILON = 1.0 #high epsilon = 100% exploration rate
-EPSILON_DECAY = 0.995 #the rate at which exploration will be reduced, prioritizing exploitation
+EPSILON_DECAY = 0.99 #the rate at which exploration will be reduced, prioritizing exploitation
 MIN_EPSILON = 0.01 #Always explore at least 1%
-NUM_EPISODES = 1000 #EPISODES TO TRAIN
+NUM_EPISODES = 2000 #EPISODES TO TRAIN
 MAX_STEPS = 300
 DEVICE = 'cpu'
 GOAL = 30 #Start small, increase once agent learns (30->45->60->90)
