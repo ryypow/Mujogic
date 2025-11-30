@@ -21,8 +21,10 @@ def state_translator(observation, env):
 
 
     # ==== discrete bin for progress towards goal
-    cube_quart = observation[-4:] #quartnerion orientatoin for cube
-    r = Rotation.from_quat(cube_quart) #reminder: working with radians
+    #MuJoCo quaternion format: [w, x, y, z], SciPy expects: [x, y, z, w]
+    cube_quat_mujoco = observation[-4:]  # [qw, qx, qy, qz]
+    cube_quat_scipy = np.array([cube_quat_mujoco[1], cube_quat_mujoco[2], cube_quat_mujoco[3], cube_quat_mujoco[0]])
+    r = Rotation.from_quat(cube_quat_scipy)
     euler = r.as_euler('xyz') #x,y,z coordinates
     z_rotation = euler[2]    
 
@@ -74,48 +76,32 @@ def state_translator(observation, env):
     else:
         speed_bin = 2 #rotating fast
 
-    """   
-    #the state features are combined to form the state ID's
-    state_map = {
-         (0,0): 0, #the cube is close to the palm and not spinning
-         (0,1): 1, #the cube is close to the palm and spinning slowly
-         (0,2): 2, #the cube is close to the palm and spinning fastly
-         (1,0): 3,#the cube is medium distance from the palm and not spinning
-         (1,1): 4,#the cube is medium distance from the palm and spinning slowly
-         (1,2):5,#the cube is medium distance from the palm and spinning fastly
-         (2,0): 6,#the cube is far from the palm and not spinning
-         (2,1): 7,#the cube is far from the palm and spinning slowly
-         (2,2): 8#the cube is far from the palm and spinning fastly
-     }
-
-    state_id = state_map[(dist_bin, speed_bin)]
-    """
-
-    #changed from state map to 3D index
-    #progress bin has 4 values
-    #dist bin has 3 values
-    #speed bin has 3 values
-    #dist bin multiplied by the speed_bin*progress_bin
-    #speed bin is multiplied by the amount of progress_bin options
     state_id = grasp_bin * 12 + speed_bin * 4 + progress_bin
 
-    return state_id
+    return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
 #============================
 # training parameters
 #===========================
 
-NUM_STATES = 36 #3 dist_bin's * 3 speed_bin's * 4 progress_bin's
-NUM_ACTIONS = 3 #Action 0 = grasp, action 1 = rotate, action 2 = hold (0.0 -> current position)
+NUM_STATES = 36 #3 grasp_bin's * 3 speed_bin's * 4 progress_bin's
+NUM_ACTIONS = 5
 LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
 DISCOUNT = 0.95 #GAMMA -> future reward importance
 EPSILON = 1.0 #high epsilon = 100% exploration rate
-EPSILON_DECAY = 0.999 #the rate at which exploration will be reduced, prioritizing exploitation
+EPSILON_DECAY = 0.995 #the rate at which exploration will be reduced, prioritizing exploitation
 MIN_EPSILON = 0.01 #Always explore at least 1%
 NUM_EPISODES = 1000 #EPISODES TO TRAIN
 MAX_STEPS = 300
 DEVICE = 'cpu'
 GOAL = 90 #[90,180,270,360]
+ACTION_NAMES = {
+    0: "GRASP",
+    1: "RELEASE",
+    2: "ROTATE",
+    3: "HOLD",
+    4: "ROT_REV"
+}
 
 #==========================
 # INITIALIZE THE Q-TABLE: 9 rows/states, 2 columns/actions
@@ -141,12 +127,16 @@ reward_tracker = []
 
 for episode in range(NUM_EPISODES):
     observation,_ = env.reset() #reset env for before each episode begins
-    state = state_translator(observation, env) #sends observation space to the translator to get discrete bins
+    state, progress_bin, grasp_bin, speed_bin, z_rot, goal_prog = state_translator(observation, env)
     step = 0
     total_reward = 0.0
     done = False
 
-    while True:
+    print("\n" + "-" * 70)
+    print("Step | Action   | State | Z-Rot  | Speed | Progress | Reward")
+    print("-" * 70)
+    
+    while step < MAX_STEPS:
         if np.random.uniform(0,1) < EPSILON: #agent will prefer exploration initially, until the epsilon decays
             action = env.action_space.sample() #returns 0 for grasp or 1 for rotate
         else:
@@ -155,42 +145,44 @@ for episode in range(NUM_EPISODES):
         #execute action
         #next_observation is an array containing the new joint positions, object position, and object orientation
         next_observation, reward, terminated, truncated, _ = env.step(action)
-        
 
-        """
-        #Get cubes orientation, get euler angle via scipy.Rotation
-        cube_quart = next_observation[-4:]
-        r = Rotation.from_quat(cube_quart) #reminder: working with radians
-        euler = r.as_euler('xyz')
-        z_rotation = euler[2]
-        """
+        new_state, progress_bin, grasp_bin, speed_bin, z_rot, goal_prog = state_translator(next_observation, env)
 
-        #escape if terminated/truncated
-        if terminated or truncated:
-            #frame = env.render()
-            #img = Image.fromarray(frame)
-            #img.save(f"termination_snap/episode_{episode}.png")
-            break
+        total_reward += reward
+        step += 1
 
-        #translate new positional values into the discrete bins
-        new_state = state_translator(next_observation, base_env)
+        if step % 10 == 0 or terminated or truncated:
+            action_name = ACTION_NAMES.get(int(action), "???")
+            print(f"{step:4d} | {action_name:8s} | {new_state:5d} | {np.rad2deg(z_rot):6.1f} | {speed_bin:5d} | {progress_bin:8d} | {reward:7.2f}")
+
 
         #old q-score for state, action
         prev_q = q_table[state, action]
 
-        #best possible score for the new state
-        best_future_q = np.max(q_table[new_state])
+        #best possible score for the new state (0 if terminal)
+        if terminated or truncated:
+            best_future_q = 0
+        else:
+            best_future_q = np.max(q_table[new_state])
 
-        #calculate new q
-        #old_score + immediate reward + (discount * best_future_q -> best possible future reward)
-        #learning rate adjusts the error slightly
-        #where the error is the discounted reward multiplied by the difference between best_q and previous_q
         new_q = prev_q + LEARNING_RATE * (reward + DISCOUNT * best_future_q - prev_q)
 
         q_table[state,action] = new_q
 
         state = new_state
-        total_reward += reward
+
+        if terminated:
+            print(f"\n*** TERMINATED at step {step} ***")
+            if goal_prog < np.deg2rad(5):
+                print("SUCCESS! Target rotation achieved!")
+            else:
+                print("Cube dropped or other termination condition")
+            break
+
+        if truncated:
+            print(f"\n*** TRUNCATED at step {step} (max steps reached) ***")
+            break
+
     
     reward_tracker.append(total_reward)
 
@@ -200,6 +192,7 @@ for episode in range(NUM_EPISODES):
     if (episode + 1) % 10 == 0:
         average_reward = np.mean(reward_tracker[-50:])
         print(f"Episode {episode+1}/{NUM_EPISODES} - Avg Reward: {average_reward:.2f} - Epsilon: {EPSILON:.3f} - Steps: {step}")
+
 
 np.save('q_table.npy', q_table)
 print("model saved as q_table.npy")

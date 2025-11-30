@@ -10,36 +10,34 @@ class ActionTranslator(gym.ActionWrapper):
     def __init__(self, env):
         super().__init__(env)
         #define the discrete action spaces
-        self.action_space = spaces.Discrete(3) #two action features - GRASP and ROTATE
+        self.action_space = spaces.Discrete(5)
+        self.strong_movement = 0.01
+        self.weak_movement = 0.005
 
     def action(self, act):
-        """
-        Convert discrete action to continuous actions
-        two discrete actions:
-            - action 0 = grasp, which closes all fingers
-            - action 1 = rotate, which makes half of the joints close and half open
-            - action 2 = hold, keeps jpoints in current position
-        """
         continuous = np.zeros(16)
 
         if act == 0: #strong grasp - close all
-            continuous[:] = 0.03
+            continuous[:] = self.strong_movement
         
         elif act == 1: #strong release - open all
-            continuous[:] = -0.03
+            continuous[:] = -self.strong_movement
 
         elif act == 2: #rotation - testing finger2 as the anchor and 
-            continuous[0:4] = -0.03 #finger1 opens
+            continuous[0:4] = -self.strong_movement #finger1 opens
             continuous[4:8] = 0.00 #finger2 is anchored, no movement from current pos
-            continuous[8:12] = 0.03 #finger3 closes and should push the cube
-            continuous[12:16] = 0.01 #thumb closes slightly
+            continuous[8:12] = self.strong_movement #finger3 closes and should push the cube
+            continuous[12:16] = self.weak_movement #thumb closes slightly
 
         elif act == 3: #hold at target
             continuous[:] = 0.0 #this will keep the fingers in their current position, stopping rotation
             #NOTE: this may not work due to the momentum of the cubes rotation
 
-        #elif act == 3: #close all fingers until contact
-
+        elif act == 4: #rotate opposite direction
+            continuous[0:4] = self.strong_movement   # finger1 closes
+            continuous[4:8] = 0.00                    # finger2 anchored
+            continuous[8:12] = -self.strong_movement  # finger3 opens
+            continuous[12:16] = self.weak_movement    # thumb
 
         return continuous
     

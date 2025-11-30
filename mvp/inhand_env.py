@@ -70,6 +70,7 @@ class CanRotateEnv(gym.Env):
     def _calculate_reward(self, cube_rotation_new, cube_rotation_prev):
         TARGET_ROTATION = self.target_rotation #target rotation passed into canRotateEnv
         TARGET_TOLERANCE = self.target_tolerance #5 deg tolerance
+        #progress_counts = np.zeros(4, dtype=int) #track iof bins are actually being used
 
         #current rotation state
         obj_vel = np.zeros(6)
@@ -84,6 +85,7 @@ class CanRotateEnv(gym.Env):
         if cube_rotation_prev is not None:
             previous_distance = abs(TARGET_ROTATION - cube_rotation_prev)
             progress_reward = (previous_distance - current_distance) * 10.0 #heavy reward for reducing the distance to target
+            #progress_counts[progress_bin] += 1
         else:
                 progress_reward = 0.0 #0 reward if their is no previous value
 
@@ -99,8 +101,10 @@ class CanRotateEnv(gym.Env):
         else:
             nearTarget_velocity_penalty = 0.0
         
+        #this will 
+        direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
         #rotation speed reward
-        rotation_reward = angular_velocity_z * 7.0
+        rotation_reward = direction_to_target * angular_velocity_z * 7.0
 
         #cube rotation progress toward target reward
        # if cube_rotation_prev is None:
@@ -188,19 +192,24 @@ class CanRotateEnv(gym.Env):
 
         mujoco.mj_forward(self.sim.model, self.sim.data)
 
-        for _ in range(20):
-            mujoco.mj_step(self.sim.model, self.sim.data) #
-
         q_open_angles = np.array([
-        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 
-        1.3, 1.0, 1.3, 1.0, 1.0, 1.0, 1.0, 1.0
-    ]) #
+        0.8, 0.8, 0.8, 0.8,  # Finger 1
+        0.8, 0.8, 0.8, 0.8,  # Finger 2
+        0.9, 0.8, 0.9, 0.8,  # Finger 3
+        0.8, 0.8, 0.8, 0.8   # Thumb
+        ]) 
+
+
         self.sim.set_joint_positions(self.sim.hand_joint_ids, q_open_angles) #
         for i, act_id in enumerate(self.sim.hand_act_ids):
             self.sim.data.ctrl[act_id] = q_open_angles[i] #
 
         mujoco.mj_forward(self.sim.model, self.sim.data)
 
+        for _ in range(20):
+            mujoco.mj_step(self.sim.model, self.sim.data) #
+
+        self.cube_rotation_prev = None
        # if self.render_mode != "headless":
         #    self.viewer.sync()
         
@@ -208,18 +217,21 @@ class CanRotateEnv(gym.Env):
 
     def step(self, action):
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
+        target_angles = np.clip(target_angles, 0.65, 1.0)
         self.sim.move_gripper_to_angles(target_angles, 0.5) #
 
         if self.render_mode != "headless" and self.viewer: #only syncs when in human mode
-            self.viewer.sync()        
+            self.viewer.sync()
 
         self.step_count += 1
         
         observation = self._get_obs()
 
         #Get cubes orientation, get euler angle via scipy.Rotation
-        cube_quart = observation[-4:]
-        r = Rotation.from_quat(cube_quart) #reminder: working with radians
+        #MuJoCo quaternion format: [w, x, y, z], SciPy expects: [x, y, z, w]
+        cube_quat_mujoco = observation[-4:]  # [qw, qx, qy, qz]
+        cube_quat_scipy = np.array([cube_quat_mujoco[1], cube_quat_mujoco[2], cube_quat_mujoco[3], cube_quat_mujoco[0]])
+        r = Rotation.from_quat(cube_quat_scipy)
         euler = r.as_euler('xyz') #x,y,z coordinates
         z_rotation = euler[2]
 
