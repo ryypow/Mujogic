@@ -10,7 +10,7 @@ class ActionTranslator(gym.ActionWrapper):
     def __init__(self, env):
         super().__init__(env)
         #define the discrete action spaces
-        self.action_space = spaces.Discrete(2) #two action features - GRASP and ROTATE
+        self.action_space = spaces.Discrete(3) #two action features - GRASP and ROTATE
 
     def action(self, act):
         """
@@ -22,16 +22,32 @@ class ActionTranslator(gym.ActionWrapper):
         """
         continuous = np.zeros(16)
 
-        if act == 0: #grasp
-            continuous[:] = -0.03
+        if act == 0: #strong grasp
+            continuous[:] = 0.05
+        
+        elif act == 1: #soft grasp
+            continuous[:] = 0.01
 
-        elif act == 1: #rotate - half open and half close
-            continuous[0:8] = 0.03 #finger 1 and finger 2 joints
-            continuous[8:16] = -0.03 #finger 3 and thumb joints
+        elif act == 2: #strong rotate
+            continuous[0:4] = 0.05 #finger 1 and finger 2 joints
+            continuous[4:8] = 0.01 #finger 3 and thumb joints
 
         elif act == 2: #hold at target
             continuous[:] = 0.0 #this will keep the fingers in their current position, stopping rotation
             #NOTE: this may not work due to the momentum of the cubes rotation
+
+        #elif act == 3: #close all fingers until contact
+
+
         return continuous
+    
+    # Add this method to ActionTranslator for debugging
+    def test_action(self, env, action_id, steps=50):
+        """Visualize what an action does"""
+        env.reset()
+        for _ in range(steps):
+            obs, reward, _, _, _ = env.step(action_id)
+            env.render()
+        print(f"{self.action_names[action_id]}: Cube rotated {np.rad2deg(obs[-4:])} degrees")
     
     

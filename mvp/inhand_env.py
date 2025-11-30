@@ -191,7 +191,10 @@ class CanRotateEnv(gym.Env):
         for _ in range(20):
             mujoco.mj_step(self.sim.model, self.sim.data) #
 
-        q_open_angles = np.array([1.0, 0.3, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.3, 1.0, 1.3, 1.0, 0.8, 1.3, 0.8, 0.5]) #
+        q_open_angles = np.array([
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 
+        1.3, 1.0, 1.3, 1.0, 1.0, 1.0, 1.0, 1.0
+    ]) #
         self.sim.set_joint_positions(self.sim.hand_joint_ids, q_open_angles) #
         for i, act_id in enumerate(self.sim.hand_act_ids):
             self.sim.data.ctrl[act_id] = q_open_angles[i] #

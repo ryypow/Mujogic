@@ -39,12 +39,12 @@ def state_translator(observation, env):
     goal = base_env.unwrapped.target_rotation
     goal_progress = abs(goal - z_rotation)
 
-    if goal_progress > np.deg2rad(60):
+    if goal_progress > np.deg2rad(90):
         progress_bin = 0 #far from goal
-    elif goal_progress > np.deg2rad(30):
+    elif goal_progress > np.deg2rad(45):
         progress_bin = 1 #getting there
-    elif goal_progress > np.deg2rad(10):
-        progress_bin = 2 #almost there
+    elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
+        progress_bin = 2 #acceptable
     else:
         progress_bin = 3 #winner winner chicken dinner
 
@@ -160,6 +160,7 @@ for episode in range(NUM_EPISODES):
         #execute action
         #next_observation is an array containing the new joint positions, object position, and object orientation
         next_observation, reward, terminated, truncated, _ = env.step(action)
+        
 
         """
         #Get cubes orientation, get euler angle via scipy.Rotation
@@ -203,7 +204,7 @@ for episode in range(NUM_EPISODES):
 
     if (episode + 1) % 10 == 0:
         average_reward = np.mean(reward_tracker[-50:])
-        print(f"Episode {episode+1}/{NUM_EPISODES} - Avg Reward: {average_reward:.2f} - Epsilon: {EPSILON:.3f}")
+        print(f"Episode {episode+1}/{NUM_EPISODES} - Avg Reward: {average_reward:.2f} - Epsilon: {EPSILON:.3f} - Steps: {step}")
 
 np.save('q_table.npy', q_table)
 print("model saved as q_table.npy")
