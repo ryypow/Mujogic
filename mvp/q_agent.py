@@ -177,14 +177,15 @@ for episode in range(NUM_EPISODES):
         if terminated:
             print(f"\n*** TERMINATED at step {step} ***")
             if goal_prog < np.deg2rad(5):
-                print("SUCCESS! Target rotation achieved!")
+                best_future_q = np.max(q_table[new_state]) #goal achieved
             else:
                 print("Cube dropped or other termination condition")
-            break
-
-        if truncated:
+                best_future_q = 0 #dropped cube - true failure
+        elif truncated:
             print(f"\n*** TRUNCATED at step {step} (max steps reached) ***")
-            break
+            best_future_q = np.max(q_table[new_state]) #time limit reached - not a failure
+        else:
+            best_future_q = np.max(q_table[new_state])
 
     
     reward_tracker.append(total_reward)
