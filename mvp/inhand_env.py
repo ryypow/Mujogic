@@ -20,9 +20,10 @@ class CanRotateEnv(gym.Env):
         #used in reward function to compare to euler rotation to the previous
         self.cube_rotation_prev = None
 
-
-
-        self.target_rotation = np.deg2rad(target_degrees)
+        # Store the rotation delta (how much to rotate from start)
+        # target_rotation will be set in reset() based on starting position
+        self.rotation_goal_delta = np.deg2rad(target_degrees)  # e.g., 90 degrees
+        self.target_rotation = None  # Will be: starting_rotation + rotation_goal_delta
         self.target_tolerance = np.deg2rad(5)
 
 
@@ -202,10 +203,21 @@ class CanRotateEnv(gym.Env):
 
         mujoco.mj_forward(self.sim.model, self.sim.data)
 
+        # Get starting rotation AFTER cube has settled
+        obs = self._get_obs()
+        cube_quat_mujoco = obs[-4:]  # [qw, qx, qy, qz]
+        cube_quat_scipy = np.array([cube_quat_mujoco[1], cube_quat_mujoco[2], cube_quat_mujoco[3], cube_quat_mujoco[0]])
+        r = Rotation.from_quat(cube_quat_scipy)
+        starting_rotation = r.as_euler('xyz')[2]
+
+        # Set target relative to starting position
+        self.target_rotation = starting_rotation + self.rotation_goal_delta
+        self.cube_rotation_prev = None
+
         if self.render_mode != "headless":
             self.viewer.sync()
-        
-        return self._get_obs(), {}
+
+        return obs, {}
 
     def step(self, action):
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
