@@ -35,25 +35,25 @@ def state_translator(observation, env):
     direction_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
     goal_progress_abs = abs(goal_progress)
 
-    if goal_progress_abs > np.deg2rad(30):
+    if goal_progress_abs > np.deg2rad(70):
         progress_bin = 0 #far from goal
-    elif goal_progress_abs > np.deg2rad(15):
+    elif goal_progress_abs > np.deg2rad(50):
         progress_bin = 1 #getting there
-    elif goal_progress_abs > np.deg2rad(5): #agreeing with configured tolerance
+    elif goal_progress > np.deg2rad(15): #agreeing with configured tolerance
         progress_bin = 2 #acceptable
     else:
         progress_bin = 3 #winner winner chicken dinner
 
     #testing grasp strength - fingers in contact (from reward function)
     fingers_in_contact = set()  # the reward function uses a set
-
+    
     for i in range(base_env.sim.data.ncon):
         contact = base_env.sim.data.contact[i]
         geom1, geom2 = contact.geom1, contact.geom2
-
-        if geom1 in base_env.fingertip_geom_ids and geom2 in base_env.can_geom_ids:
+        
+        if geom1 in base_env.fingertip_geom_ids and geom2 == base_env.can_geom_id:
             fingers_in_contact.add(geom1)
-        elif geom2 in base_env.fingertip_geom_ids and geom1 in base_env.can_geom_ids:
+        elif geom2 in base_env.fingertip_geom_ids and geom1 == base_env.can_geom_id:
             fingers_in_contact.add(geom2)
     
     num_fingers = len(fingers_in_contact)
@@ -92,8 +92,8 @@ NUM_STATES = 72 #2 directions, 3 grasp, 3 speed, 4 progress
 NUM_ACTIONS = 5
 LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
 DISCOUNT = 0.99 #GAMMA -> future reward importance
-EPSILON = 0.8 #high epsilon = 100% exploration rate
-EPSILON_DECAY = 0.995 #the rate at which exploration will be reduced, prioritizing exploitation
+EPSILON = 1.0 #high epsilon = 100% exploration rate
+EPSILON_DECAY = 0.99 #the rate at which exploration will be reduced, prioritizing exploitation
 MIN_EPSILON = 0.01 #Always explore at least 1%
 NUM_EPISODES = 2000 #EPISODES TO TRAIN
 MAX_STEPS = 300
@@ -164,7 +164,7 @@ for episode in range(NUM_EPISODES):
 
         if step % 10 == 0 or terminated or truncated:
             action_name = ACTION_NAMES.get(int(action), "???")
-            print(f"{step:4d} | {action_name:8s} | {new_state:5d} | {np.rad2deg(z_rot):6.1f} | G:{grasp_bin} S:{speed_bin} P:{progress_bin} | {reward:7.2f}")
+            print(f"{step:4d} | {action_name:8s} | {new_state:5d} | {np.rad2deg(z_rot):6.1f} | {speed_bin:5d} | {progress_bin:8d} | {reward:7.2f}")
 
 
         #old q-score for state, action

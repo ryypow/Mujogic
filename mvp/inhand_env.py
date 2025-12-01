@@ -43,6 +43,17 @@ class CanRotateEnv(gym.Env):
         self.sim.actuators_for_joints('arm') #
         self.sim.actuators_for_joints('hand') #
         self.can_geom_id = mujoco.mj_name2id(self.sim.model, mujoco.mjtObj.mjOBJ_GEOM, "obj1")
+
+        # Get all geom IDs for the cube (obj1 body has 6 geom faces)
+        # We'll use the first geom of obj1 body for collision detection
+        obj1_body_geomadr = self.sim.model.body_geomadr[self.obj_body_id]
+        obj1_body_geomnum = self.sim.model.body_geomnum[self.obj_body_id]
+        # Get all geom IDs belonging to obj1 body
+        self.can_geom_ids = set(range(obj1_body_geomadr, obj1_body_geomadr + obj1_body_geomnum))
+        # For backward compatibility, use first geom as the primary can_geom_id
+        self.can_geom_id = obj1_body_geomadr
+
+#there might be an issue here - never rewarding for contact
         self.fingertip_geom_ids = {
             mujoco.mj_name2id(self.sim.model, mujoco.mjtObj.mjOBJ_GEOM, "fingertip"),
             mujoco.mj_name2id(self.sim.model, mujoco.mjtObj.mjOBJ_GEOM, "fingertip_2"),
@@ -197,7 +208,7 @@ class CanRotateEnv(gym.Env):
         for _ in range(20):
             mujoco.mj_step(self.sim.model, self.sim.data) #
 
-        q_open_angles = np.array([1.0, 0.3, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.3, 1.0, 1.3, 1.0, 0.8, 1.3, 0.8, 0.5]) #
+        q_open_angles = np.array([0.8, 0.5, 0.8, 0.8, 0.3, 0.3, 0.3, 0.3, 1.0, 0.8, 1.0, 0.8, 0.7, 1.0, 0.7, 0.5]) #
         self.sim.set_joint_positions(self.sim.hand_joint_ids, q_open_angles) #
         for i, act_id in enumerate(self.sim.hand_act_ids):
             self.sim.data.ctrl[act_id] = q_open_angles[i] #
