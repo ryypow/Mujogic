@@ -37,11 +37,12 @@ def state_translator(observation, env):
     #irection_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
     #goal_progress_abs = abs(goal_progress)
 
-    if goal_progress > np.deg2rad(30):
+    goal_deg = np.deg2rad(goal)
+    if goal_progress > np.deg2rad(goal_deg * 0.5): #>50% remaining
         progress_bin = 0 #far from goal
-    elif goal_progress > np.deg2rad(15):
+    elif goal_progress > np.deg2rad(goal_deg * 0.25): #25% remaining
         progress_bin = 1 #getting there
-    elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
+    elif goal_progress > np.deg2rad(5): #>5 degrees remaining
         progress_bin = 2 #acceptable
     else:
         progress_bin = 3 #winner winner chicken dinner
@@ -142,6 +143,14 @@ reward_tracker = []
 
 for episode in range(NUM_EPISODES):
 
+    if episode < 1000:
+        GOAL = [30, 45]
+    elif episode < 2000:
+        GOAL = [60, 90]
+    elif episode < 3000:
+        GOAL = [90, 180]
+    else:
+        GOAL = [180, 270, 360]
     #randomizing the goal for each episode
     goal = np.random.choice(GOAL)
     base_env = CanRotateEnv(goal, render_mode="headless")
