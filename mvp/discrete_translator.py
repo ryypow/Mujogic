@@ -11,8 +11,8 @@ class ActionTranslator(gym.ActionWrapper):
         super().__init__(env)
         #define the discrete action spaces
         self.action_space = spaces.Discrete(5)
-        self.strong_movement = 0.03
-        self.weak_movement = 0.015
+        self.strong_movement = 0.05
+        self.weak_movement = 0.025
 
     def action(self, act):
         continuous = np.zeros(16)
@@ -24,8 +24,8 @@ class ActionTranslator(gym.ActionWrapper):
             continuous[:] = -self.strong_movement
 
         elif act == 2: #rotation POSITIVE (+Z direction)
-            continuous[0:4] = self.strong_movement    # finger1 CLOSES (pushes cube +Z)
-            continuous[4:8] = 0.00                     # finger2 anchored
+            continuous[0:4] = self.strong_movement * 1.5   # stronger push to move cube more
+            continuous[4:8] = -self.strong_movement  #slightly releases
             continuous[8:12] = -self.strong_movement  # finger3 OPENS (allows rotation)
             continuous[12:16] = self.weak_movement    # thumb stabilizes
 
