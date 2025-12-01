@@ -81,104 +81,70 @@ class CanRotateEnv(gym.Env):
         return np.concatenate([finger_qpos, object_pose])
 
     def _calculate_reward(self, cube_rotation_new, cube_rotation_prev):
-        TARGET_ROTATION = self.target_rotation #target rotation passed into canRotateEnv
-        TARGET_TOLERANCE = self.target_tolerance #5 deg tolerance
-        #progress_counts = np.zeros(4, dtype=int) #track iof bins are actually being used
+        TARGET_ROTATION = self.target_rotation
+        TARGET_TOLERANCE = self.target_tolerance
 
-        #current rotation state
         obj_vel = np.zeros(6)
         mujoco.mj_objectVelocity(self.sim.model, self.sim.data, mujoco.mjtObj.mjOBJ_BODY, self.obj_body_id, obj_vel, 0)
         angular_velocity_z = obj_vel[2]
 
-
-        #distance to target rotation
         current_distance = abs(TARGET_ROTATION - cube_rotation_new)
 
-        #compare the previous rotation delta to the rotation delta
-        #current_distance should be smaller, so this favors a positive number
+        # Progress reward (distance-based)
         if cube_rotation_prev is not None:
             previous_distance = abs(TARGET_ROTATION - cube_rotation_prev)
-            #print("=================")
-            #print(f"prev distance {previous_distance}")
-            progress_reward = (previous_distance - current_distance) * 30.0 #heavy reward for reducing the distance to target
-            #progress_counts[progress_bin] += 1
+            progress_reward = (previous_distance - current_distance) * 30.0
         else:
-                progress_reward = 0.0 #0 reward if their is no previous value
+            progress_reward = 0.0
 
-        #Bonus for rotating the cube within the tolerance bounds (+- 10 degrees)
-        if current_distance < TARGET_TOLERANCE:
-            nearTarget_bonus = 100.0
-        else:
-            nearTarget_bonus = 0.0
-        
-        #Penalty for spinning fast (bin2) near target or near tolerance bounds
-        if current_distance < np.deg2rad(15):
-            nearTarget_velocity_penalty = abs(angular_velocity_z) * 0.5
-        else:
-            nearTarget_velocity_penalty = 0.0
+        # Near target bonus
+        nearTarget_bonus = 100.0 if current_distance < TARGET_TOLERANCE else 0.0
 
-        #making the rotation reward direction aware
+        # Near target velocity penalty
+        nearTarget_velocity_penalty = abs(angular_velocity_z) * 0.5 if current_distance < np.deg2rad(15) else 0.0
+
+        # Direction-aware rotation reward (FIXED)
         direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
-        #rotation speed reward: reward rotating toward target, penalize rotating away
-        #If direction_to_target > 0, we need positive rotation; reward positive angular_velocity_z
-        #If direction_to_target < 0, we need negative rotation; reward negative angular_velocity_z
-        rotation_reward = direction_to_target * angular_velocity_z * 5.0
 
-        #Penalty for rotating in wrong direction (drift away from target)
-        #If direction_to_target > 0 but angular_velocity_z < 0, we're drifting wrong way
-        wrong_direction_drift = direction_to_target * angular_velocity_z < 0
-        drift_penalty = 5.0 * abs(angular_velocity_z) if wrong_direction_drift else 0.0
+        if cube_rotation_prev is not None:
+            rotation_change = cube_rotation_new - cube_rotation_prev  # ✅ Keep sign!
+            rotation_reward = direction_to_target * rotation_change * 30.0
 
-        #cube rotation progress toward target reward
-       # if cube_rotation_prev is None:
-        #    return 0.0
-       # rotation_change = abs(cube_rotation_new - cube_rotation_prev) #favors positive change
-        
+            # Wrong direction penalty (FIXED)
+            moving_wrong_way = (direction_to_target > 0 and rotation_change < 0) or \
+                                (direction_to_target < 0 and rotation_change > 0)
+            drift_penalty = abs(rotation_change) * 50.0 if moving_wrong_way else 0.0
+        else:
+            rotation_reward = 0.0
+            drift_penalty = 0.0
+
+        # Survival reward
         can_pos = self.sim.data.xpos[self.obj_body_id]
         palm_pos = self.sim.data.site_xpos[self.site_id]
         distance_from_palm = np.linalg.norm(can_pos - palm_pos)
         survival_reward = 0.1 - distance_from_palm
 
-        # --- Contact Reward ---
+        # Contact reward (unchanged)
         contact_reward = 0.0
-        
-        # Use a set to count unique fingers touching the can
         fingers_in_contact = set()
-
-        # Iterate through all contacts in the current simulation step
         for i in range(self.sim.data.ncon):
             contact = self.sim.data.contact[i]
-            geom1 = contact.geom1
-            geom2 = contact.geom2
-
-            # Check if one of the geometries is the can and the other is a fingertip
-            is_geom1_fingertip = geom1 in self.fingertip_geom_ids
-            is_geom2_fingertip = geom2 in self.fingertip_geom_ids
-            is_geom1_can = geom1 in self.can_geom_ids
-            is_geom2_can = geom2 in self.can_geom_ids
-
-            if (is_geom1_fingertip and is_geom2_can):
+            geom1, geom2 = contact.geom1, contact.geom2
+            if geom1 in self.fingertip_geom_ids and geom2 in self.can_geom_ids:
                 fingers_in_contact.add(geom1)
-            elif (is_geom2_fingertip and is_geom1_can):
+            elif geom2 in self.fingertip_geom_ids and geom1 in self.can_geom_ids:
                 fingers_in_contact.add(geom2)
-        
-        # Give a bonus if three specified fingers are touching the can
+
         if len(fingers_in_contact) >= 3:
-            contact_reward = 2.0  # decreased from 5.0 to test
+            contact_reward = 2.0
         elif len(fingers_in_contact) > 0:
-            contact_reward = 0.4 * len(fingers_in_contact) # Smaller reward for partial contact
+            contact_reward = 0.4 * len(fingers_in_contact)
 
-
-
-        # DEBUG: Print every 50 steps to see actual values
+        # Debug output
         if hasattr(self, 'step_count') and self.step_count % 50 == 0:
             print(f"  DEBUG: prog={progress_reward:.2f} rot={rotation_reward:.2f} surv={survival_reward:.2f} contact={contact_reward:.2f}")
-            print(f"  DEBUG: z_rot={np.rad2deg(cube_rotation_new):.1f}° target={np.rad2deg(TARGET_ROTATION):.1f}° ang_vel_z={angular_velocity_z:.3f} dir={direction_to_target:.0f}")
+            print(f"  DEBUG: z_rot={np.rad2deg(cube_rotation_new):.1f}° target={np.rad2deg(TARGET_ROTATION):.1f}° dir={direction_to_target:.0f}")
 
-
-
-
-        # Combine all reward components
         total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty - drift_penalty
         return total_reward
 
