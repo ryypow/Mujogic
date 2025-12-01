@@ -92,13 +92,13 @@ NUM_STATES = 72 #2 directions, 3 grasp, 3 speed, 4 progress
 NUM_ACTIONS = 5
 LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
 DISCOUNT = 0.99 #GAMMA -> future reward importance
-EPSILON = 0.8 #high epsilon = 100% exploration rate
+EPSILON = 0.5 #high epsilon = 100% exploration rate
 EPSILON_DECAY = 0.995 #the rate at which exploration will be reduced, prioritizing exploitation
 MIN_EPSILON = 0.01 #Always explore at least 1%
 NUM_EPISODES = 2000 #EPISODES TO TRAIN
 MAX_STEPS = 300
 DEVICE = 'cpu'
-GOAL = 90 #Start small, increase once agent learns (30->45->60->90)
+GOAL = 45 #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
