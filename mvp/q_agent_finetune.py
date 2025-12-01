@@ -34,14 +34,14 @@ def state_translator(observation, env):
     goal_progress = goal - z_rotation
 
     #new
-    direction_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
-    goal_progress_abs = abs(goal_progress)
+    #irection_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
+    #goal_progress_abs = abs(goal_progress)
 
-    if goal_progress_abs > np.deg2rad(30):
+    if goal_progress > np.deg2rad(30):
         progress_bin = 0 #far from goal
-    elif goal_progress_abs > np.deg2rad(15):
+    elif goal_progress > np.deg2rad(15):
         progress_bin = 1 #getting there
-    elif goal_progress_abs > np.deg2rad(5): #agreeing with configured tolerance
+    elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
         progress_bin = 2 #acceptable
     else:
         progress_bin = 3 #winner winner chicken dinner
@@ -82,7 +82,7 @@ def state_translator(observation, env):
     else:
         speed_bin = 2 #rotating fast
 
-    state_id = direction_bin * 36 + grasp_bin * 12 + speed_bin * 4 + progress_bin
+    state_id = grasp_bin * 12 + speed_bin * 4 + progress_bin
 
     return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
@@ -90,17 +90,17 @@ def state_translator(observation, env):
 # training parameters
 #===========================
 
-NUM_STATES = 72 #2 directions, 3 grasp, 3 speed, 4 progress
+NUM_STATES = 36 #3 grasp, 3 speed, 4 progress
 NUM_ACTIONS = 5
-LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
-DISCOUNT = 0.99 #GAMMA -> future reward importance
-EPSILON = 0.5 #high epsilon = 100% exploration rate
-EPSILON_DECAY = 0.995 #the rate at which exploration will be reduced, prioritizing exploitation
-MIN_EPSILON = 0.01 #Always explore at least 1%
-NUM_EPISODES = 2000 #EPISODES TO TRAIN
-MAX_STEPS = 300
+LEARNING_RATE = 0.05 #lowered from 0.1 -- need to preserve existing knowledge
+DISCOUNT = 0.99 #GAMMA -> long-horizong importance
+EPSILON = 0.3 #decreased, since we are using a policy
+EPSILON_DECAY = 0.997 #increased from 0.995 to 0.997 - prioritizing exploioration
+MIN_EPSILON = 0.05 #increased to 5% - maintain exploration
+NUM_EPISODES = 4000 #EPISODES TO TRAIN - 1000 for each goal
+MAX_STEPS = 500 #increase steps from 300 to 500
 DEVICE = 'cpu'
-GOAL = 45 #Start small, increase once agent learns (30->45->60->90)
+GOAL = [90, 180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
@@ -132,19 +132,6 @@ else:
 
 print(f"Q-table shape: {q_table.shape}")
 
-#==========================
-# initialize environment and the discrete translator
-#==========================
-
-base_env = CanRotateEnv(GOAL, render_mode="headless")
-env = ActionTranslator(base_env)
-
-# DEBUG: Print geom IDs to verify they're valid
-print("\n=== DEBUG: Geom IDs ===")
-print(f"Fingertip geom IDs: {base_env.fingertip_geom_ids}")
-print(f"Cube geom IDs: {base_env.can_geom_ids}")
-print(f"Any -1 in fingertips? {-1 in base_env.fingertip_geom_ids}")
-print("========================\n")
 
 #==========================
 # training loop
@@ -154,22 +141,29 @@ os.makedirs("termination_snap", exist_ok=True) #collect images of termination
 reward_tracker = []
 
 for episode in range(NUM_EPISODES):
+
+    #randomizing the goal for each episode
+    goal = np.random.choice(GOAL)
+    base_env = CanRotateEnv(goal, render_mode="headless")
+    env = ActionTranslator(base_env)
+
+
     observation,_ = env.reset() #reset env for before each episode begins
     state, progress_bin, grasp_bin, speed_bin, z_rot, goal_prog = state_translator(observation, env)
     step = 0
     total_reward = 0.0
     done = False
-
-
-    # Debug: Show target rotation for this episode
     base = env.unwrapped
-    print(f"\n=== Episode {episode+1} | Target: {np.rad2deg(base.target_rotation):.1f}° | Start Z-Rot: {np.rad2deg(z_rot):.1f}° ===")
+
+    print(f"\n=== Episode {episode+1} | Target: {goal}° | Start Z-Rot: {np.rad2deg(z_rot):.1f}° ===")
     print("-" * 70)
     print("Step | Action   | State | Z-Rot  | G S P | Reward")
     print("-" * 70)
     print("\n" + "-" * 70)
     print("Step | Action   | State | Z-Rot  | Speed | Progress | Reward")
     print("-" * 70)
+
+    # Debug: Show target rotation for this episode
     
     while step < MAX_STEPS:
         if np.random.uniform(0,1) < EPSILON: #agent will prefer exploration initially, until the epsilon decays
@@ -232,5 +226,5 @@ for episode in range(NUM_EPISODES):
         print(f"Episode {episode+1}/{NUM_EPISODES} - Avg Reward: {average_reward:.2f} - Epsilon: {EPSILON:.3f} - Steps: {step}")
 
 
-np.save('q_table.npy', q_table)
-print("model saved as q_table.npy")
+np.save('q_table_4goals.npy', q_table)
+print("model saved as q_table4goals.npy")
