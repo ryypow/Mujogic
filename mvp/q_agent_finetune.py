@@ -205,8 +205,8 @@ for episode in range(NUM_EPISODES):
     #adjust policy
     EPSILON = max(MIN_EPSILON, EPSILON * EPSILON_DECAY)
 
-    if (episode + 1) % 100 == 0:
-        average_reward = np.mean(reward_tracker[-100:])
+    if (episode + 1) % 25 == 0:
+        average_reward = np.mean(reward_tracker[-25:])
         print(f"Episode {episode+1}/{NUM_EPISODES} | Avg Reward: {average_reward:.2f} | Epsilon: {EPSILON:.3f} | Last Goal: {goal}° | Final Z-Rot: {np.rad2deg(z_rot):.1f}°")
 
 
