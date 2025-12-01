@@ -143,6 +143,13 @@ for episode in range(NUM_EPISODES):
     total_reward = 0.0
     done = False
 
+
+    # Debug: Show target rotation for this episode
+    base = env.unwrapped
+    print(f"\n=== Episode {episode+1} | Target: {np.rad2deg(base.target_rotation):.1f}° | Start Z-Rot: {np.rad2deg(z_rot):.1f}° ===")
+    print("-" * 70)
+    print("Step | Action   | State | Z-Rot  | G S P | Reward")
+    print("-" * 70)
     print("\n" + "-" * 70)
     print("Step | Action   | State | Z-Rot  | Speed | Progress | Reward")
     print("-" * 70)

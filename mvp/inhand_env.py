@@ -90,6 +90,16 @@ class CanRotateEnv(gym.Env):
         mujoco.mj_objectVelocity(self.sim.model, self.sim.data, mujoco.mjtObj.mjOBJ_BODY, self.obj_body_id, obj_vel, 0)
         angular_velocity_z = obj_vel[2]
 
+
+        # DEBUG: Print every 50 steps to see actual values
+        if hasattr(self, 'step_count') and self.step_count % 50 == 0:
+            print(f"  DEBUG: target={np.rad2deg(TARGET_ROTATION):.1f}° current={np.rad2deg(cube_rotation_new):.1f}° vel_z={angular_velocity_z:.3f} dir={direction_to_target} rot_reward={rotation_reward:.2f}")
+
+
+
+
+
+
         #distance to target rotation
         current_distance = abs(TARGET_ROTATION - cube_rotation_new)
 
