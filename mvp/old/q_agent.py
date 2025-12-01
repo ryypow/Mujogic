@@ -98,13 +98,13 @@ MIN_EPSILON = 0.01 #Always explore at least 1%
 NUM_EPISODES = 2000 #EPISODES TO TRAIN
 MAX_STEPS = 300
 DEVICE = 'cpu'
-GOAL = 45 #Start small, increase once agent learns (30->45->60->90)
+GOAL = 15 #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
-    2: "ROT_POS",   # Rotate toward +Z (positive direction)
+    2: "ROTATE",
     3: "HOLD",
-    4: "ROT_NEG"    # Rotate toward -Z (negative direction)
+    4: "ROT_REV"
 }
 
 #==========================
@@ -173,9 +173,6 @@ for episode in range(NUM_EPISODES):
             action_name = ACTION_NAMES.get(int(action), "???")
             print(f"{step:4d} | {action_name:8s} | {new_state:5d} | {np.rad2deg(z_rot):6.1f} | G:{grasp_bin} S:{speed_bin} P:{progress_bin} | {reward:7.2f}")
 
-
-        #old q-score for state, action
-
         if terminated:
             print(f"\n*** TERMINATED at step {step} ***")
             if goal_prog < np.deg2rad(5):
@@ -183,26 +180,21 @@ for episode in range(NUM_EPISODES):
             else:
                 print("Cube dropped or other termination condition")
                 best_future_q = 0 #dropped cube - true failure
-                
-            prev_q = q_table[state, action]
-            new_q = prev_q + LEARNING_RATE * (reward + DISCOUNT * best_future_q - prev_q)
-            q_table[state, action] = new_q            
             break
-        
         elif truncated:
             print(f"\n*** TRUNCATED at step {step} (max steps reached) ***")
             best_future_q = np.max(q_table[new_state]) #time limit reached - not a failure
         else:
             best_future_q = np.max(q_table[new_state])
-
+            
+        #old q-score for state, action
         prev_q = q_table[state, action]
+
         new_q = prev_q + LEARNING_RATE * (reward + DISCOUNT * best_future_q - prev_q)
 
         q_table[state,action] = new_q
 
         state = new_state
-
-
 
     
     reward_tracker.append(total_reward)

@@ -90,7 +90,6 @@ class CanRotateEnv(gym.Env):
         mujoco.mj_objectVelocity(self.sim.model, self.sim.data, mujoco.mjtObj.mjOBJ_BODY, self.obj_body_id, obj_vel, 0)
         angular_velocity_z = obj_vel[2]
 
-
         #distance to target rotation
         current_distance = abs(TARGET_ROTATION - cube_rotation_new)
 
@@ -98,8 +97,6 @@ class CanRotateEnv(gym.Env):
         #current_distance should be smaller, so this favors a positive number
         if cube_rotation_prev is not None:
             previous_distance = abs(TARGET_ROTATION - cube_rotation_prev)
-            #print("=================")
-            #print(f"prev distance {previous_distance}")
             progress_reward = (previous_distance - current_distance) * 30.0 #heavy reward for reducing the distance to target
             #progress_counts[progress_bin] += 1
         else:
@@ -107,7 +104,7 @@ class CanRotateEnv(gym.Env):
 
         #Bonus for rotating the cube within the tolerance bounds (+- 10 degrees)
         if current_distance < TARGET_TOLERANCE:
-            nearTarget_bonus = 100.0
+            nearTarget_bonus = 20.0
         else:
             nearTarget_bonus = 0.0
         
@@ -116,18 +113,11 @@ class CanRotateEnv(gym.Env):
             nearTarget_velocity_penalty = abs(angular_velocity_z) * 0.5
         else:
             nearTarget_velocity_penalty = 0.0
-
+        
         #making the rotation reward direction aware
         direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
-        #rotation speed reward: reward rotating toward target, penalize rotating away
-        #If direction_to_target > 0, we need positive rotation; reward positive angular_velocity_z
-        #If direction_to_target < 0, we need negative rotation; reward negative angular_velocity_z
+        #rotation speed reward, larger penalty for spinning away
         rotation_reward = direction_to_target * angular_velocity_z * 5.0
-
-        #Penalty for rotating in wrong direction (drift away from target)
-        #If direction_to_target > 0 but angular_velocity_z < 0, we're drifting wrong way
-        wrong_direction_drift = direction_to_target * angular_velocity_z < 0
-        drift_penalty = 5.0 * abs(angular_velocity_z) if wrong_direction_drift else 0.0
 
         #cube rotation progress toward target reward
        # if cube_rotation_prev is None:
@@ -164,22 +154,21 @@ class CanRotateEnv(gym.Env):
         
         # Give a bonus if three specified fingers are touching the can
         if len(fingers_in_contact) >= 3:
-            contact_reward = 2.0  # decreased from 5.0 to test
+            contact_reward = 1.0  # decreased from 5.0 to test
         elif len(fingers_in_contact) > 0:
-            contact_reward = 0.4 * len(fingers_in_contact) # Smaller reward for partial contact
+            contact_reward = 0.2 * len(fingers_in_contact) # Smaller reward for partial contact
 
 
 
         # DEBUG: Print every 50 steps to see actual values
         if hasattr(self, 'step_count') and self.step_count % 50 == 0:
-            print(f"  DEBUG: prog={progress_reward:.2f} rot={rotation_reward:.2f} surv={survival_reward:.2f} contact={contact_reward:.2f}")
-            print(f"  DEBUG: z_rot={np.rad2deg(cube_rotation_new):.1f}° target={np.rad2deg(TARGET_ROTATION):.1f}° ang_vel_z={angular_velocity_z:.3f} dir={direction_to_target:.0f}")
+            print(f"  DEBUG: prog={progress_reward:.2f} rot={rotation_reward:.2f} surv={survival_reward:.2f} contact={contact_reward:.2f} total={progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty:.2f}")
 
 
 
 
         # Combine all reward components
-        total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty - drift_penalty
+        total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty
         return total_reward
 
 #---- need to update for different target positions
