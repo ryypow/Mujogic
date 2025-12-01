@@ -8,7 +8,7 @@ from gymnasium import spaces
 from scipy.spatial.transform import Rotation
 from simulation import Simulation
 
-MAX_EPISODE_STEPS = 300
+MAX_EPISODE_STEPS = 350
 
 class CanRotateEnv(gym.Env):
     metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30}
