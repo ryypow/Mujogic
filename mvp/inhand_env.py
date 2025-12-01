@@ -90,16 +90,6 @@ class CanRotateEnv(gym.Env):
         mujoco.mj_objectVelocity(self.sim.model, self.sim.data, mujoco.mjtObj.mjOBJ_BODY, self.obj_body_id, obj_vel, 0)
         angular_velocity_z = obj_vel[2]
 
-
-        # DEBUG: Print every 50 steps to see actual values
-        if hasattr(self, 'step_count') and self.step_count % 50 == 0:
-            print(f"  DEBUG: target={np.rad2deg(TARGET_ROTATION):.1f}° current={np.rad2deg(cube_rotation_new):.1f}° vel_z={angular_velocity_z:.3f} dir={direction_to_target} rot_reward={rotation_reward:.2f}")
-
-
-
-
-
-
         #distance to target rotation
         current_distance = abs(TARGET_ROTATION - cube_rotation_new)
 
@@ -107,7 +97,7 @@ class CanRotateEnv(gym.Env):
         #current_distance should be smaller, so this favors a positive number
         if cube_rotation_prev is not None:
             previous_distance = abs(TARGET_ROTATION - cube_rotation_prev)
-            progress_reward = (previous_distance - current_distance) * 10.0 #heavy reward for reducing the distance to target
+            progress_reward = (previous_distance - current_distance) * 30.0 #heavy reward for reducing the distance to target
             #progress_counts[progress_bin] += 1
         else:
                 progress_reward = 0.0 #0 reward if their is no previous value
@@ -127,7 +117,7 @@ class CanRotateEnv(gym.Env):
         #making the rotation reward direction aware
         direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
         #rotation speed reward, larger penalty for spinning away
-        rotation_reward = direction_to_target * angular_velocity_z * 15.0
+        rotation_reward = direction_to_target * angular_velocity_z * 5.0
 
         #cube rotation progress toward target reward
        # if cube_rotation_prev is None:
@@ -167,7 +157,16 @@ class CanRotateEnv(gym.Env):
             contact_reward = 1.0  # decreased from 5.0 to test
         elif len(fingers_in_contact) > 0:
             contact_reward = 0.2 * len(fingers_in_contact) # Smaller reward for partial contact
-            
+
+
+
+        # DEBUG: Print every 50 steps to see actual values
+        if hasattr(self, 'step_count') and self.step_count % 50 == 0:
+            print(f"  DEBUG: prog={progress_reward:.2f} rot={rotation_reward:.2f} surv={survival_reward:.2f} contact={contact_reward:.2f} total={progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty:.2f}")
+
+
+
+
         # Combine all reward components
         total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty
         return total_reward
