@@ -37,14 +37,14 @@ def state_translator(observation, env):
     #irection_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
     #goal_progress_abs = abs(goal_progress)
 
-    if goal_progress > np.deg2rad(30):
-        progress_bin = 0 #far from goal
-    elif goal_progress > np.deg2rad(15):
-        progress_bin = 1 #getting there
-    elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
-        progress_bin = 2 #acceptable
-    else:
-        progress_bin = 3 #winner winner chicken dinner
+    #if goal_progress > np.deg2rad(30):
+    #    progress_bin = 0 #far from goal
+    #elif goal_progress > np.deg2rad(15):
+    #    progress_bin = 1 #getting there
+    #elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
+    #    progress_bin = 2 #acceptable
+    #else:
+     #   progress_bin = 3 #winner winner chicken dinner
 
     #testing grasp strength - fingers in contact (from reward function)
     fingers_in_contact = set()  # the reward function uses a set
@@ -82,7 +82,34 @@ def state_translator(observation, env):
     else:
         speed_bin = 2 #rotating fast
 
-    state_id = grasp_bin * 12 + speed_bin * 4 + progress_bin
+    # Goal magnitude bin - aligned with GOAL = [90, 180, 270, 360]
+    goal_abs = abs(goal)
+    if goal_abs > np.deg2rad(180):
+        goal_bin = 3  # 181-360°
+    elif goal_abs > np.deg2rad(90):
+        goal_bin = 2  # 91-180°
+    elif goal_abs > np.deg2rad(45):
+        goal_bin = 1  # 46-90°
+    else:
+        goal_bin = 0  # 0-45°
+
+    # Relative progress bin
+    if goal_abs > 0:
+        progress_ratio = abs(goal_progress) / goal_abs
+    else:
+        progress_ratio = 0
+
+    if progress_ratio > 0.7:
+        progress_bin = 0  # far
+    elif progress_ratio > 0.3:
+        progress_bin = 1  # making progress
+    elif progress_ratio > 0.1:
+        progress_bin = 2  # close
+    else:
+        progress_bin = 3  # at goal
+
+    # Combined state: 4 goal × 3 grasp × 3 speed × 4 progress = 144 states
+    state_id = goal_bin * 36 + grasp_bin * 12 + speed_bin * 4 + progress_bin
 
     return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
@@ -90,7 +117,7 @@ def state_translator(observation, env):
 # training parameters
 #===========================
 
-NUM_STATES = 36 #3 grasp, 3 speed, 4 progress
+NUM_STATES = 144  # 4 goal × 3 grasp × 3 speed × 4 progress
 NUM_ACTIONS = 5
 LEARNING_RATE = 0.05 #lowered from 0.1 -- need to preserve existing knowledge
 DISCOUNT = 0.99 #GAMMA -> long-horizong importance
@@ -100,7 +127,7 @@ MIN_EPSILON = 0.05 #increased to 5% - maintain exploration
 NUM_EPISODES = 4000 #EPISODES TO TRAIN - 1000 for each goal
 MAX_STEPS = 500 #increase steps from 300 to 500
 DEVICE = 'cpu'
-#GOAL = [90, 180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
+GOAL = [90, 180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
@@ -145,15 +172,6 @@ base_env = CanRotateEnv(target_degrees=15, render_mode="headless")
 env = ActionTranslator(base_env)
 
 for episode in range(NUM_EPISODES):
-
-    if episode < 1000:
-        GOAL = [30, 45]
-    elif episode < 2000:
-        GOAL = [45, 60]
-    elif episode < 3000:
-        GOAL = [90, 120]
-    else:
-        GOAL = [180, 360]
         
     #randomizing the goal for each episode
     goal = np.random.choice(GOAL)
