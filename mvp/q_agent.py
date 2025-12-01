@@ -33,12 +33,13 @@ def state_translator(observation, env):
 
     #new
     direction_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
+    goal_progress_abs = abs(goal_progress)
 
-    if goal_progress > np.deg2rad(30):
+    if goal_progress_abs > np.deg2rad(30):
         progress_bin = 0 #far from goal
-    elif goal_progress > np.deg2rad(15):
+    elif goal_progress_abs > np.deg2rad(15):
         progress_bin = 1 #getting there
-    elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
+    elif goal_progress_abs > np.deg2rad(5): #agreeing with configured tolerance
         progress_bin = 2 #acceptable
     else:
         progress_bin = 3 #winner winner chicken dinner
