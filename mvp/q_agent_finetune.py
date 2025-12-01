@@ -37,12 +37,11 @@ def state_translator(observation, env):
     #irection_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
     #goal_progress_abs = abs(goal_progress)
 
-    goal_deg = np.deg2rad(goal)
-    if goal_progress > np.deg2rad(goal_deg * 0.5): #>50% remaining
+    if goal_progress > np.deg2rad(30):
         progress_bin = 0 #far from goal
-    elif goal_progress > np.deg2rad(goal_deg * 0.25): #25% remaining
+    elif goal_progress > np.deg2rad(15):
         progress_bin = 1 #getting there
-    elif goal_progress > np.deg2rad(5): #>5 degrees remaining
+    elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
         progress_bin = 2 #acceptable
     else:
         progress_bin = 3 #winner winner chicken dinner
@@ -143,14 +142,6 @@ reward_tracker = []
 
 for episode in range(NUM_EPISODES):
 
-    if episode < 1000:
-        GOAL = [30, 45]
-    elif episode < 2000:
-        GOAL = [60, 90]
-    elif episode < 3000:
-        GOAL = [90, 180]
-    else:
-        GOAL = [180, 270, 360]
     #randomizing the goal for each episode
     goal = np.random.choice(GOAL)
     base_env = CanRotateEnv(goal, render_mode="headless")
@@ -164,16 +155,6 @@ for episode in range(NUM_EPISODES):
     done = False
     base = env.unwrapped
 
-    print(f"\n=== Episode {episode+1} | Target: {goal}° | Start Z-Rot: {np.rad2deg(z_rot):.1f}° ===")
-    print("-" * 70)
-    print("Step | Action   | State | Z-Rot  | G S P | Reward")
-    print("-" * 70)
-    print("\n" + "-" * 70)
-    print("Step | Action   | State | Z-Rot  | Speed | Progress | Reward")
-    print("-" * 70)
-
-    # Debug: Show target rotation for this episode
-    
     while step < MAX_STEPS:
         if np.random.uniform(0,1) < EPSILON: #agent will prefer exploration initially, until the epsilon decays
             action = env.action_space.sample() #returns 0 for grasp or 1 for rotate
@@ -189,19 +170,14 @@ for episode in range(NUM_EPISODES):
         total_reward += reward
         step += 1
 
-        if step % 10 == 0 or terminated or truncated:
-            action_name = ACTION_NAMES.get(int(action), "???")
-            print(f"{step:4d} | {action_name:8s} | {new_state:5d} | {np.rad2deg(z_rot):6.1f} | G:{grasp_bin} S:{speed_bin} P:{progress_bin} | {reward:7.2f}")
 
 
         #old q-score for state, action
 
         if terminated:
-            print(f"\n*** TERMINATED at step {step} ***")
             if goal_prog < np.deg2rad(5):
                 best_future_q = np.max(q_table[new_state]) #goal achieved
             else:
-                print("Cube dropped or other termination condition")
                 best_future_q = 0 #dropped cube - true failure
                 
             prev_q = q_table[state, action]
@@ -210,7 +186,6 @@ for episode in range(NUM_EPISODES):
             break
         
         elif truncated:
-            print(f"\n*** TRUNCATED at step {step} (max steps reached) ***")
             best_future_q = np.max(q_table[new_state]) #time limit reached - not a failure
         else:
             best_future_q = np.max(q_table[new_state])
@@ -230,9 +205,9 @@ for episode in range(NUM_EPISODES):
     #adjust policy
     EPSILON = max(MIN_EPSILON, EPSILON * EPSILON_DECAY)
 
-    if (episode + 1) % 10 == 0:
-        average_reward = np.mean(reward_tracker[-50:])
-        print(f"Episode {episode+1}/{NUM_EPISODES} - Avg Reward: {average_reward:.2f} - Epsilon: {EPSILON:.3f} - Steps: {step}")
+    if (episode + 1) % 100 == 0:
+        average_reward = np.mean(reward_tracker[-100:])
+        print(f"Episode {episode+1}/{NUM_EPISODES} | Avg Reward: {average_reward:.2f} | Epsilon: {EPSILON:.3f} | Last Goal: {goal}° | Final Z-Rot: {np.rad2deg(z_rot):.1f}°")
 
 
 np.save('q_table_4goals.npy', q_table)

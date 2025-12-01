@@ -8,7 +8,7 @@ from gymnasium import spaces
 from scipy.spatial.transform import Rotation
 from simulation import Simulation
 
-MAX_EPISODE_STEPS = 500
+MAX_EPISODE_STEPS = 300
 
 class CanRotateEnv(gym.Env):
     metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30}
@@ -62,7 +62,7 @@ class CanRotateEnv(gym.Env):
         }
         
         # Define action and observation spaces
-        self.action_space = spaces.Box(low=-0.05, high=0.05, shape=(16,), dtype=np.float32)
+        self.action_space = spaces.Box(low=-0.03, high=0.03, shape=(16,), dtype=np.float32)
         obs_size = len(self.sim.hand_joint_ids) + 7
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32)
 
@@ -140,11 +140,6 @@ class CanRotateEnv(gym.Env):
         elif len(fingers_in_contact) > 0:
             contact_reward = 0.4 * len(fingers_in_contact)
 
-        # Debug output
-        if hasattr(self, 'step_count') and self.step_count % 50 == 0:
-            print(f"  DEBUG: prog={progress_reward:.2f} rot={rotation_reward:.2f} surv={survival_reward:.2f} contact={contact_reward:.2f}")
-            print(f"  DEBUG: z_rot={np.rad2deg(cube_rotation_new):.1f}° target={np.rad2deg(TARGET_ROTATION):.1f}° dir={direction_to_target:.0f}")
-
         total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty - drift_penalty
         return total_reward
 
@@ -219,7 +214,7 @@ class CanRotateEnv(gym.Env):
 
     def step(self, action):
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
-        target_angles = np.clip(target_angles, 0.5, 1.2)
+        target_angles = np.clip(target_angles, 0.65, 1.0)
         self.sim.move_gripper_to_angles(target_angles, 0.5) #
 
         if self.render_mode != "headless" and self.viewer: #only syncs when in human mode
