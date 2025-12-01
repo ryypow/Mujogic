@@ -41,13 +41,4 @@ class ActionTranslator(gym.ActionWrapper):
 
         return continuous
     
-    # Add this method to ActionTranslator for debugging
-    def test_action(self, env, action_id, steps=50):
-        """Visualize what an action does"""
-        env.reset()
-        for _ in range(steps):
-            obs, reward, _, _, _ = env.step(action_id)
-            env.render()
-        print(f"{self.action_names[action_id]}: Cube rotated {np.rad2deg(obs[-4:])} degrees")
-    
     
