@@ -1,3 +1,5 @@
+"Fine-tuning q_table for larger goals and reverse rotation (favors positive right now)"
+
 """
 Tabular Q-learning for cube rotation -> rotate to exact angles and stop
 based on: https://www.learndatasci.com/tutorials/reinforcement-q-learning-scratch-python-openai-gym/
@@ -32,14 +34,14 @@ def state_translator(observation, env):
     goal_progress = goal - z_rotation
 
     #new
-    #irection_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
-    #goal_progress_abs = abs(goal_progress)
+    direction_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
+    goal_progress_abs = abs(goal_progress)
 
-    if goal_progress > np.deg2rad(30):
+    if goal_progress_abs > np.deg2rad(30):
         progress_bin = 0 #far from goal
-    elif goal_progress > np.deg2rad(15):
+    elif goal_progress_abs > np.deg2rad(15):
         progress_bin = 1 #getting there
-    elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
+    elif goal_progress_abs > np.deg2rad(5): #agreeing with configured tolerance
         progress_bin = 2 #acceptable
     else:
         progress_bin = 3 #winner winner chicken dinner
@@ -80,7 +82,7 @@ def state_translator(observation, env):
     else:
         speed_bin = 2 #rotating fast
 
-    state_id = grasp_bin * 12 + speed_bin * 4 + progress_bin
+    state_id = direction_bin * 36 + grasp_bin * 12 + speed_bin * 4 + progress_bin
 
     return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
@@ -88,7 +90,7 @@ def state_translator(observation, env):
 # training parameters
 #===========================
 
-NUM_STATES = 36 #3 grasp, 3 speed, 4 progress
+NUM_STATES = 72 #2 directions, 3 grasp, 3 speed, 4 progress
 NUM_ACTIONS = 5
 LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
 DISCOUNT = 0.99 #GAMMA -> future reward importance
@@ -110,10 +112,25 @@ ACTION_NAMES = {
 #==========================
 # INITIALIZE THE Q-TABLE: 9 rows/states, 2 columns/actions
 #==========================
-print("Initializing q-table")
-q_table = np.zeros((NUM_STATES, NUM_ACTIONS))
-print("\nq-table initialized with zeros")
-print("\nQ-table shape: ", q_table.shape)
+import os
+
+Q_TABLE_PATH = 'q_table.npy'
+
+if os.path.exists(Q_TABLE_PATH):
+    print(f"Loading existing Q-table from {Q_TABLE_PATH}")
+    q_table = np.load(Q_TABLE_PATH)
+    print(f"Loaded Q-table shape: {q_table.shape}")
+
+    # Verify shape matches current state/action space
+    if q_table.shape != (NUM_STATES, NUM_ACTIONS):
+        print(f"Warning: Shape mismatch! Expected ({NUM_STATES}, {NUM_ACTIONS})")
+        print("Initializing new Q-table with zeros")
+        q_table = np.zeros((NUM_STATES, NUM_ACTIONS))
+else:
+    print("No existing Q-table found. Initializing with zeros")
+    q_table = np.zeros((NUM_STATES, NUM_ACTIONS))
+
+print(f"Q-table shape: {q_table.shape}")
 
 #==========================
 # initialize environment and the discrete translator
