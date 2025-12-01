@@ -114,10 +114,10 @@ class CanRotateEnv(gym.Env):
         else:
             nearTarget_velocity_penalty = 0.0
         
-        #this will 
+        #making the rotation reward direction aware
         direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
-        #rotation speed reward
-        rotation_reward = direction_to_target * angular_velocity_z * 7.0
+        #rotation speed reward, larger penalty for spinning away
+        rotation_reward = direction_to_target * angular_velocity_z * 15.0
 
         #cube rotation progress toward target reward
        # if cube_rotation_prev is None:
@@ -154,9 +154,9 @@ class CanRotateEnv(gym.Env):
         
         # Give a bonus if three specified fingers are touching the can
         if len(fingers_in_contact) >= 3:
-            contact_reward = 5.0  # Large, one-time bonus for achieving the grasp
+            contact_reward = 1.0  # decreased from 5.0 to test
         elif len(fingers_in_contact) > 0:
-            contact_reward = 0.5 * len(fingers_in_contact) # Smaller reward for partial contact
+            contact_reward = 0.2 * len(fingers_in_contact) # Smaller reward for partial contact
             
         # Combine all reward components
         total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty
