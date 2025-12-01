@@ -24,7 +24,7 @@ class ActionTranslator(gym.ActionWrapper):
             continuous[:] = -self.strong_movement
 
         elif act == 2: #rotation POSITIVE (+Z direction)
-            continuous[0:4] = self.strong_movement * 1.5   # stronger push to move cube more
+            continuous[0:4] = self.strong_movement * 3.0   # stronger push to move cube more
             continuous[4:8] = -self.weak_movement  #slightly releases
             continuous[8:12] = -self.strong_movement  # finger3 OPENS (allows rotation)
             continuous[12:16] = self.weak_movement    # thumb stabilizes

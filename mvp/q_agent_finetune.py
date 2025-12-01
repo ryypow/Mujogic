@@ -100,7 +100,7 @@ MIN_EPSILON = 0.05 #increased to 5% - maintain exploration
 NUM_EPISODES = 4000 #EPISODES TO TRAIN - 1000 for each goal
 MAX_STEPS = 500 #increase steps from 300 to 500
 DEVICE = 'cpu'
-GOAL = [90, 180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
+#GOAL = [90, 180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
@@ -140,12 +140,16 @@ print("Starting training...")
 os.makedirs("termination_snap", exist_ok=True) #collect images of termination
 reward_tracker = []
 
+#init environment with target of 15 degrees
+base_env = CanRotateEnv(target_degrees=15, render_mode="headless")
+env = ActionTranslator(base_env)
+
 for episode in range(NUM_EPISODES):
 
     if episode < 1000:
-        GOAL = [15, 30]
+        GOAL = [30, 45]
     elif episode < 2000:
-        GOAL = [ 45, 60]
+        GOAL = [45, 60]
     elif episode < 3000:
         GOAL = [90, 120]
     else:
@@ -153,8 +157,8 @@ for episode in range(NUM_EPISODES):
         
     #randomizing the goal for each episode
     goal = np.random.choice(GOAL)
-    base_env = CanRotateEnv(goal, render_mode="headless")
-    env = ActionTranslator(base_env)
+
+    base_env.rotation_goal_delta = np.deg2rad(goal)
 
 
     observation,_ = env.reset() #reset env for before each episode begins
