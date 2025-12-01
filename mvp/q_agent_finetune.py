@@ -142,6 +142,15 @@ reward_tracker = []
 
 for episode in range(NUM_EPISODES):
 
+    if episode < 1000:
+        GOAL = [15, 30]
+    elif episode < 2000:
+        GOAL = [ 45, 60]
+    elif episode < 3000:
+        GOAL = [90, 120]
+    else:
+        GOAL = [180, 360]
+        
     #randomizing the goal for each episode
     goal = np.random.choice(GOAL)
     base_env = CanRotateEnv(goal, render_mode="headless")
