@@ -235,11 +235,13 @@ for episode in range(NUM_EPISODES):
 
     #adjust policy
     EPSILON = max(MIN_EPSILON, EPSILON * EPSILON_DECAY)
+    if (episode + 1) % 100 == 0:
+        np.save(f'q_table_checkpoint_{episode+1}.npy', q_table)
 
     if (episode + 1) % 25 == 0:
         average_reward = np.mean(reward_tracker[-25:])
         print(f"Episode {episode+1}/{NUM_EPISODES} | Avg Reward: {average_reward:.2f} | Epsilon: {EPSILON:.3f} | Last Goal: {goal}° | Final Z-Rot: {np.rad2deg(z_rot):.1f}°")
 
 
-np.save('q_table_4goals.npy', q_table)
-print("model saved as q_table4goals.npy")
+np.save('q_table_final.npy', q_table)
+print("model saved as q_table_final.npy")

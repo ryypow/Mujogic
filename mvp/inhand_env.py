@@ -215,7 +215,7 @@ class CanRotateEnv(gym.Env):
     def step(self, action):
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
         target_angles = np.clip(target_angles, 0.65, 1.0)
-        self.sim.move_gripper_to_angles(target_angles, 0.5) #
+        self.sim.move_gripper_to_angles(target_angles, 0.05) #
 
         if self.render_mode != "headless" and self.viewer: #only syncs when in human mode
             self.viewer.sync()
