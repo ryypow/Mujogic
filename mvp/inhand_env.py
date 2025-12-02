@@ -93,7 +93,7 @@ class CanRotateEnv(gym.Env):
         # Progress reward (distance-based)
         if cube_rotation_prev is not None:
             previous_distance = abs(TARGET_ROTATION - cube_rotation_prev)
-            progress_reward = (previous_distance - current_distance) * 30.0
+            progress_reward = (previous_distance - current_distance) * 80.0
         else:
             progress_reward = 0.0
 
@@ -108,7 +108,7 @@ class CanRotateEnv(gym.Env):
 
         if cube_rotation_prev is not None:
             rotation_change = cube_rotation_new - cube_rotation_prev  # ✅ Keep sign!
-            rotation_reward = direction_to_target * rotation_change * 30.0
+            rotation_reward = direction_to_target * rotation_change * 80.0
 
             # Wrong direction penalty (FIXED)
             moving_wrong_way = (direction_to_target > 0 and rotation_change < 0) or \
@@ -122,7 +122,7 @@ class CanRotateEnv(gym.Env):
         can_pos = self.sim.data.xpos[self.obj_body_id]
         palm_pos = self.sim.data.site_xpos[self.site_id]
         distance_from_palm = np.linalg.norm(can_pos - palm_pos)
-        survival_reward = 0.1 - distance_from_palm
+        survival_reward = 0.02 - distance_from_palm
 
         # Contact reward (unchanged)
         contact_reward = 0.0
@@ -136,9 +136,9 @@ class CanRotateEnv(gym.Env):
                 fingers_in_contact.add(geom2)
 
         if len(fingers_in_contact) >= 3:
-            contact_reward = 2.0
+            contact_reward = 0.4
         elif len(fingers_in_contact) > 0:
-            contact_reward = 0.4 * len(fingers_in_contact)
+            contact_reward = 0.1 * len(fingers_in_contact)
 
         total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty - drift_penalty
         return total_reward
