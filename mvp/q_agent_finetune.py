@@ -108,8 +108,9 @@ def state_translator(observation, env):
     else:
         progress_bin = 3  # at goal
 
-    # Combined state: 4 goal × 3 grasp × 3 speed × 4 progress = 144 states
-    state_id = goal_bin * 36 + grasp_bin * 12 + speed_bin * 4 + progress_bin
+    direction_bin = 0 if goal_progress >= 0 else 1 #0 favors positive rotation
+
+    state_id = direction_bin * 144 + goal_bin * 36 + grasp_bin * 12 + speed_bin * 4 + progress_bin
 
     return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
@@ -117,17 +118,17 @@ def state_translator(observation, env):
 # training parameters
 #===========================
 
-NUM_STATES = 144  # 4 goal × 3 grasp × 3 speed × 4 progress
+NUM_STATES = 288  # 2 direction x 4 goal × 3 grasp × 3 speed × 4 progress
 NUM_ACTIONS = 5
 LEARNING_RATE = 0.05 #lowered from 0.1 -- need to preserve existing knowledge
 DISCOUNT = 0.99 #GAMMA -> long-horizong importance
-EPSILON = 0.5 #decreased, since we are using a policy
-EPSILON_DECAY = 0.995 #increased from 0.995 to 0.997 - prioritizing exploioration
+EPSILON = 0.7 
+EPSILON_DECAY = 0.997 #increased from 0.995 to 0.997 - prioritizing exploioration
 MIN_EPSILON = 0.05 #increased to 5% - maintain exploration
-NUM_EPISODES = 1500 #EPISODES TO TRAIN - 1000 for each goal
+NUM_EPISODES = 2000 #EPISODES TO TRAIN - 1000 for each goal
 MAX_STEPS = 400 
 DEVICE = 'cpu'
-GOAL = [90, 180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
+GOAL = [30, 60, 90] #180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
