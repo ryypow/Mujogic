@@ -8,7 +8,7 @@ from gymnasium import spaces
 from scipy.spatial.transform import Rotation
 from simulation import Simulation
 
-MAX_EPISODE_STEPS = 350
+MAX_EPISODE_STEPS = 400
 
 class CanRotateEnv(gym.Env):
     metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30}
@@ -108,7 +108,7 @@ class CanRotateEnv(gym.Env):
 
         if cube_rotation_prev is not None:
             rotation_change = cube_rotation_new - cube_rotation_prev  # ✅ Keep sign!
-            rotation_reward = direction_to_target * rotation_change * 80.0
+            rotation_reward = direction_to_target * rotation_change * 60.0
 
             # Wrong direction penalty (FIXED)
             moving_wrong_way = (direction_to_target > 0 and rotation_change < 0) or \
@@ -214,8 +214,8 @@ class CanRotateEnv(gym.Env):
 
     def step(self, action):
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
-        target_angles = np.clip(target_angles, 0.65, 1.0)
-        self.sim.move_gripper_to_angles(target_angles, 0.05) #
+        #target_angles = np.clip(target_angles, 0.65, 1.0)
+        self.sim.move_gripper_to_angles(target_angles, 0.15) #
 
         if self.render_mode != "headless" and self.viewer: #only syncs when in human mode
             self.viewer.sync()
