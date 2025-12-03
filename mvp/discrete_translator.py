@@ -31,13 +31,12 @@ class ActionTranslator(gym.ActionWrapper):
 
         elif act == 3: #hold at target
             continuous[:] = 0.0 #this will keep the fingers in their current position, stopping rotation
-            #NOTE: this may not work due to the momentum of the cubes rotation
 
-        #elif act == 4: #rotation NEGATIVE (-Z direction)
-        #    continuous[0:4] = -self.strong_movement   # finger1 OPENS (allows rotation)
-        #    continuous[4:8] = 0.00                    # finger2 anchored
-        #    continuous[8:12] = self.strong_movement   # finger3 CLOSES (pushes cube -Z)
-        #    continuous[12:16] = self.weak_movement    # thumb stabilizes
+        elif act == 4: #rotation NEGATIVE (-Z direction) - mirror of ROT_POS
+            continuous[0:4] = self.strong_movement * 1.5   # finger1 CLOSES (pushes cube -Z)
+            continuous[4:8] = self.weak_movement           # finger2 stabilizes
+            continuous[8:12] = -self.strong_movement       # finger3 OPENS (allows rotation)
+            continuous[12:16] = -self.weak_movement        # thumb releases slightly
 
         return continuous
     
