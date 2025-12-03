@@ -1,0 +1,113 @@
+Initializing new Q-table with zeros
+Q-table shape: (36, 5)
+
+Starting curriculum training:
+  Goals: [45, 45, 60, 60, 90, 90]
+  Episodes per goal: 500
+  Total episodes: 3000
+Ep   50/3000 | Goal:  45° | Avg Reward:   -4.08 | Epsilon: 0.688 | Final Z:   -5.8°
+Ep  100/3000 | Goal:  45° | Avg Reward:  -22.54 | Epsilon: 0.592 | Final Z:    3.7°
+Ep  150/3000 | Goal:  45° | Avg Reward:  -26.35 | Epsilon: 0.510 | Final Z:    5.2°
+Ep  200/3000 | Goal:  45° | Avg Reward:  -13.74 | Epsilon: 0.439 | Final Z:   42.3°
+Ep  250/3000 | Goal:  45° | Avg Reward:  -42.26 | Epsilon: 0.377 | Final Z:    4.8°
+Ep  300/3000 | Goal:  45° | Avg Reward:  -21.83 | Epsilon: 0.325 | Final Z:    5.2°
+Ep  350/3000 | Goal:  45° | Avg Reward:  -10.71 | Epsilon: 0.280 | Final Z:   30.1°
+Ep  400/3000 | Goal:  45° | Avg Reward:   -0.61 | Epsilon: 0.241 | Final Z:    3.6°
+Ep  450/3000 | Goal:  45° | Avg Reward:   20.53 | Epsilon: 0.207 | Final Z:    6.5°
+Ep  500/3000 | Goal:  45° | Avg Reward:   38.99 | Epsilon: 0.178 | Final Z:    6.0°
+  -> Checkpoint saved: q_table_v2_checkpoint_500.npy
+Ep  550/3000 | Goal:  45° | Avg Reward:   48.29 | Epsilon: 0.153 | Final Z:    6.6°
+Ep  600/3000 | Goal:  45° | Avg Reward:  121.75 | Epsilon: 0.132 | Final Z:    5.6°
+Ep  650/3000 | Goal:  45° | Avg Reward:   71.64 | Epsilon: 0.113 | Final Z:   13.3°
+Ep  700/3000 | Goal:  45° | Avg Reward:  102.85 | Epsilon: 0.098 | Final Z:    6.3°
+Ep  750/3000 | Goal:  45° | Avg Reward:   95.54 | Epsilon: 0.084 | Final Z:    7.1°
+Ep  800/3000 | Goal:  45° | Avg Reward:  123.31 | Epsilon: 0.072 | Final Z:   42.5°
+Ep  850/3000 | Goal:  45° | Avg Reward:  208.65 | Epsilon: 0.062 | Final Z:   42.3°
+Ep  900/3000 | Goal:  45° | Avg Reward:  148.43 | Epsilon: 0.054 | Final Z:    6.8°
+Ep  950/3000 | Goal:  45° | Avg Reward:  135.25 | Epsilon: 0.050 | Final Z:   42.4°
+Ep 1000/3000 | Goal:  45° | Avg Reward:  161.93 | Epsilon: 0.050 | Final Z:   42.2°
+  -> Checkpoint saved: q_table_v2_checkpoint_1000.npy
+Ep 1050/3000 | Goal:  60° | Avg Reward:   50.66 | Epsilon: 0.050 | Final Z:    6.3°
+Ep 1100/3000 | Goal:  60° | Avg Reward:   78.96 | Epsilon: 0.050 | Final Z:    4.1°
+Ep 1150/3000 | Goal:  60° | Avg Reward:   62.30 | Epsilon: 0.050 | Final Z:   50.0°
+Ep 1200/3000 | Goal:  60° | Avg Reward:   61.22 | Epsilon: 0.050 | Final Z:   48.0°
+Ep 1250/3000 | Goal:  60° | Avg Reward:  113.69 | Epsilon: 0.050 | Final Z:   49.6°
+Ep 1300/3000 | Goal:  60° | Avg Reward:   82.58 | Epsilon: 0.050 | Final Z:   52.0°
+Ep 1350/3000 | Goal:  60° | Avg Reward:   98.83 | Epsilon: 0.050 | Final Z:   47.8°
+Ep 1400/3000 | Goal:  60° | Avg Reward:   80.62 | Epsilon: 0.050 | Final Z:   25.2°
+Ep 1450/3000 | Goal:  60° | Avg Reward:   97.33 | Epsilon: 0.050 | Final Z:   49.8°
+Ep 1500/3000 | Goal:  60° | Avg Reward:  111.37 | Epsilon: 0.050 | Final Z:   50.4°
+  -> Checkpoint saved: q_table_v2_checkpoint_1500.npy
+Ep 1550/3000 | Goal:  60° | Avg Reward:  115.31 | Epsilon: 0.050 | Final Z:   48.6°
+Ep 1600/3000 | Goal:  60° | Avg Reward:   65.26 | Epsilon: 0.050 | Final Z:   50.0°
+Ep 1650/3000 | Goal:  60° | Avg Reward:   94.97 | Epsilon: 0.050 | Final Z:   36.2°
+Ep 1700/3000 | Goal:  60° | Avg Reward:  103.68 | Epsilon: 0.050 | Final Z:   48.2°
+Ep 1750/3000 | Goal:  60° | Avg Reward:   97.91 | Epsilon: 0.050 | Final Z:   55.3°
+Ep 1800/3000 | Goal:  60° | Avg Reward:  116.37 | Epsilon: 0.050 | Final Z:   48.9°
+Ep 1850/3000 | Goal:  60° | Avg Reward:   81.49 | Epsilon: 0.050 | Final Z:   49.6°
+Ep 1900/3000 | Goal:  60° | Avg Reward:  101.81 | Epsilon: 0.050 | Final Z:   64.3°
+Ep 1950/3000 | Goal:  60° | Avg Reward:   88.26 | Epsilon: 0.050 | Final Z:   50.0°
+Ep 2000/3000 | Goal:  60° | Avg Reward:  104.57 | Epsilon: 0.050 | Final Z:    6.4°
+  -> Checkpoint saved: q_table_v2_checkpoint_2000.npy
+Ep 2050/3000 | Goal:  90° | Avg Reward:   93.27 | Epsilon: 0.050 | Final Z:    6.4°
+Ep 2100/3000 | Goal:  90° | Avg Reward:   70.25 | Epsilon: 0.050 | Final Z:   49.3°
+Ep 2150/3000 | Goal:  90° | Avg Reward:   66.57 | Epsilon: 0.050 | Final Z:    6.9°
+Ep 2200/3000 | Goal:  90° | Avg Reward:  120.78 | Epsilon: 0.050 | Final Z:   49.7°
+Ep 2250/3000 | Goal:  90° | Avg Reward:   92.26 | Epsilon: 0.050 | Final Z:   48.3°
+Ep 2300/3000 | Goal:  90° | Avg Reward:  117.41 | Epsilon: 0.050 | Final Z:   46.7°
+Ep 2350/3000 | Goal:  90° | Avg Reward:   95.74 | Epsilon: 0.050 | Final Z:   50.3°
+Ep 2400/3000 | Goal:  90° | Avg Reward:   91.24 | Epsilon: 0.050 | Final Z:   49.8°
+Ep 2450/3000 | Goal:  90° | Avg Reward:  113.97 | Epsilon: 0.050 | Final Z:   50.0°
+Ep 2500/3000 | Goal:  90° | Avg Reward:  115.09 | Epsilon: 0.050 | Final Z:    6.7°
+  -> Checkpoint saved: q_table_v2_checkpoint_2500.npy
+Ep 2550/3000 | Goal:  90° | Avg Reward:   73.43 | Epsilon: 0.050 | Final Z:   40.0°
+Ep 2600/3000 | Goal:  90° | Avg Reward:  108.12 | Epsilon: 0.050 | Final Z:    6.3°
+Ep 2650/3000 | Goal:  90° | Avg Reward:  105.95 | Epsilon: 0.050 | Final Z:   50.4°
+Ep 2700/3000 | Goal:  90° | Avg Reward:   85.89 | Epsilon: 0.050 | Final Z:    6.6°
+Ep 2750/3000 | Goal:  90° | Avg Reward:   74.15 | Epsilon: 0.050 | Final Z:   49.2°
+Ep 2800/3000 | Goal:  90° | Avg Reward:  113.01 | Epsilon: 0.050 | Final Z:   49.8°
+Ep 2850/3000 | Goal:  90° | Avg Reward:  113.46 | Epsilon: 0.050 | Final Z:   48.6°
+Ep 2900/3000 | Goal:  90° | Avg Reward:   94.60 | Epsilon: 0.050 | Final Z:   48.6°
+Ep 2950/3000 | Goal:  90° | Avg Reward:  113.90 | Epsilon: 0.050 | Final Z:   48.6°
+Ep 3000/3000 | Goal:  90° | Avg Reward:   98.92 | Epsilon: 0.050 | Final Z:   48.0°
+  -> Checkpoint saved: q_table_v2_checkpoint_3000.npy
+
+Training complete!
+Final Q-table saved as: q_table_v2_final.npy
+
+=== Q-table Summary ===
+Non-zero entries: 133 / 180
+Max Q-value: 69.00
+Best actions per state:
+  State  0: GRASP (Q=38.6)
+  State  1: HOLD (Q=26.5)
+  State  2: GRASP (Q=17.0)
+  State  3: GRASP (Q=14.2)
+  State  4: GRASP (Q=42.4)
+  State  5: HOLD (Q=26.4)
+  State  6: GRASP (Q=16.6)
+  State  7: HOLD (Q=10.7)
+  State  8: ROT_POS (Q=36.6)
+  State  9: ROT_POS (Q=26.9)
+  State 10: GRASP (Q=25.7)
+  State 11: GRASP (Q=69.0)
+  State 12: GRASP (Q=47.1)
+  State 13: ROT_POS (Q=36.2)
+  State 14: GRASP (Q=16.8)
+  State 15: GRASP (Q=18.9)
+  State 16: GRASP (Q=45.6)
+  State 17: GRASP (Q=36.0)
+  State 18: ROT_POS (Q=16.2)
+  State 19: GRASP (Q=17.7)
+  State 20: HOLD (Q=42.0)
+  State 21: GRASP (Q=37.0)
+  State 22: GRASP (Q=16.3)
+  State 24: GRASP (Q=48.7)
+  State 25: RELEASE (Q=32.8)
+  State 26: RELEASE (Q=11.3)
+  State 28: GRASP (Q=47.9)
+  State 29: RELEASE (Q=24.5)
+  State 30: RELEASE (Q=9.3)
+  State 32: GRASP (Q=45.0)
+  State 33: GRASP (Q=22.4)
+  State 34: GRASP (Q=8.3)
