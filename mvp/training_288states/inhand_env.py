@@ -84,18 +84,18 @@ class CanRotateEnv(gym.Env):
         TARGET_ROTATION = self.target_rotation
         TARGET_TOLERANCE = self.target_tolerance
 
-        #print(f"target rotation: {TARGET_ROTATION}")
-        #print(f"target tolerance: {TARGET_TOLERANCE}")
+        print(f"target rotation: {TARGET_ROTATION}")
+        print(f"target tolerance: {TARGET_TOLERANCE}")
 
         obj_vel = np.zeros(6)
         mujoco.mj_objectVelocity(self.sim.model, self.sim.data, mujoco.mjtObj.mjOBJ_BODY, self.obj_body_id, obj_vel, 0)
         angular_velocity_z = obj_vel[2]
 
-        #print(f"angular velocity: {angular_velocity_z}")
+        print(f"angular velocity: {angular_velocity_z}")
 
         current_distance = abs(TARGET_ROTATION - cube_rotation_new)
 
-        #print(f"current distance: {np.rad2deg(current_distance)}")
+        print(f"current distance: {np.rad2deg(current_distance)}")
 
         # Progress reward (distance-based)
         if cube_rotation_prev is not None:
@@ -113,7 +113,7 @@ class CanRotateEnv(gym.Env):
         # Direction-aware rotation reward (FIXED)
         direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
 
-        #print(f"direction to target: {direction_to_target}")
+        print(f"direction to target: {direction_to_target}")
 
         if cube_rotation_prev is not None:
             rotation_change = cube_rotation_new - cube_rotation_prev  # 
@@ -134,8 +134,8 @@ class CanRotateEnv(gym.Env):
         distance_from_palm = np.linalg.norm(can_pos - palm_pos)
         survival_reward = 0.02 - distance_from_palm
 
-        #print(f"cube position: {can_pos}")
-        #print(f"distance from palm: {distance_from_palm}")
+        print(f"cube position: {can_pos}")
+        print(f"distance from palm: {distance_from_palm}")
 
 
 
@@ -150,7 +150,7 @@ class CanRotateEnv(gym.Env):
             elif geom2 in self.fingertip_geom_ids and geom1 in self.can_geom_ids:
                 fingers_in_contact.add(geom2)
 
-       # print(f"fingers_in_contact: {fingers_in_contact}")
+        print(f"fingers_in_contact: {fingers_in_contact}")
 
 
         if len(fingers_in_contact) >= 3:
@@ -162,7 +162,7 @@ class CanRotateEnv(gym.Env):
 
         total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty - drift_penalty
         
-        #print(f"total _reward: {total_reward}")
+        print(f"total _reward: {total_reward}")
 
         return total_reward
 

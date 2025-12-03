@@ -122,13 +122,13 @@ NUM_STATES = 288  # 2 direction x 4 goal × 3 grasp × 3 speed × 4 progress
 NUM_ACTIONS = 5
 LEARNING_RATE = 0.3 #lowered from 0.1 -- need to preserve existing knowledge
 DISCOUNT = 0.99 #GAMMA -> long-horizong importance
-EPSILON = 0.9 
+EPSILON = 0.6 
 EPSILON_DECAY = 0.998 #increased from 0.995 to 0.997 - prioritizing exploioration
 MIN_EPSILON = 0.05 #increased to 5% - maintain exploration
-NUM_EPISODES = 2000 #EPISODES TO TRAIN - 1000 for each goal
+NUM_EPISODES = 1500 #EPISODES TO TRAIN - 1000 for each goal
 MAX_STEPS = 400 
 DEVICE = 'cpu'
-GOAL = [30, 60, 90] #180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
+GOAL = [45] #180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
@@ -241,7 +241,7 @@ for episode in range(NUM_EPISODES):
 
     if (episode + 1) % 25 == 0:
         average_reward = np.mean(reward_tracker[-25:])
-        print(f"Episode {episode+1}/{NUM_EPISODES} | Avg Reward: {average_reward:.2f} | Epsilon: {EPSILON:.3f} | Last Goal: {goal}° | Final Z-Rot: {np.rad2deg(z_rot):.1f}°")
+        print(f"Episode {episode+1}/{NUM_EPISODES} | Avg Reward: {average_reward:.2f} | Epsilon: {EPSILON:.3f}") # | Last Goal: {goal}° | Final Z-Rot: {np.rad2deg(z_rot):.1f}°")
 
 
 np.save('q_table_final.npy', q_table)

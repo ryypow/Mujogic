@@ -1,3 +1,5 @@
+"Fine-tuning q_table for larger goals and reverse rotation (favors positive right now)"
+
 """
 Tabular Q-learning for cube rotation -> rotate to exact angles and stop
 based on: https://www.learndatasci.com/tutorials/reinforcement-q-learning-scratch-python-openai-gym/
@@ -32,28 +34,28 @@ def state_translator(observation, env):
     goal_progress = goal - z_rotation
 
     #new
-    direction_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
-    goal_progress_abs = abs(goal_progress)
+    #irection_bin = 0 if goal_progress >= 0 else 1 #0 = need positive rotation, 1 = need negative rotation
+    #goal_progress_abs = abs(goal_progress)
 
-    if goal_progress_abs > np.deg2rad(70):
-        progress_bin = 0 #far from goal
-    elif goal_progress_abs > np.deg2rad(50):
-        progress_bin = 1 #getting there
-    elif goal_progress > np.deg2rad(15): #agreeing with configured tolerance
-        progress_bin = 2 #acceptable
-    else:
-        progress_bin = 3 #winner winner chicken dinner
+    #if goal_progress > np.deg2rad(30):
+    #    progress_bin = 0 #far from goal
+    #elif goal_progress > np.deg2rad(15):
+    #    progress_bin = 1 #getting there
+    #elif goal_progress > np.deg2rad(5): #agreeing with configured tolerance
+    #    progress_bin = 2 #acceptable
+    #else:
+     #   progress_bin = 3 #winner winner chicken dinner
 
     #testing grasp strength - fingers in contact (from reward function)
     fingers_in_contact = set()  # the reward function uses a set
-    
+
     for i in range(base_env.sim.data.ncon):
         contact = base_env.sim.data.contact[i]
         geom1, geom2 = contact.geom1, contact.geom2
-        
-        if geom1 in base_env.fingertip_geom_ids and geom2 == base_env.can_geom_id:
+
+        if geom1 in base_env.fingertip_geom_ids and geom2 in base_env.can_geom_ids:
             fingers_in_contact.add(geom1)
-        elif geom2 in base_env.fingertip_geom_ids and geom1 == base_env.can_geom_id:
+        elif geom2 in base_env.fingertip_geom_ids and geom1 in base_env.can_geom_ids:
             fingers_in_contact.add(geom2)
     
     num_fingers = len(fingers_in_contact)
@@ -80,7 +82,35 @@ def state_translator(observation, env):
     else:
         speed_bin = 2 #rotating fast
 
-    state_id = direction_bin * 36 + grasp_bin * 12 + speed_bin * 4 + progress_bin
+    # Goal magnitude bin - aligned with GOAL = [90, 180, 270, 360]
+    goal_abs = abs(goal)
+    if goal_abs > np.deg2rad(180):
+        goal_bin = 3  # 181-360°
+    elif goal_abs > np.deg2rad(90):
+        goal_bin = 2  # 91-180°
+    elif goal_abs > np.deg2rad(45):
+        goal_bin = 1  # 46-90°
+    else:
+        goal_bin = 0  # 0-45°
+
+    # Relative progress bin
+    if goal_abs > 0:
+        progress_ratio = abs(goal_progress) / goal_abs
+    else:
+        progress_ratio = 0
+
+    if progress_ratio > 0.7:
+        progress_bin = 0  # far
+    elif progress_ratio > 0.3:
+        progress_bin = 1  # making progress
+    elif progress_ratio > 0.1:
+        progress_bin = 2  # close
+    else:
+        progress_bin = 3  # at goal
+
+    rotation_bin = 0 if z_rotation >= 0 else 1 #0 favors positive rotation, 1
+
+    state_id = rotation_bin * 144 + goal_bin * 36 + grasp_bin * 12 + speed_bin * 4 + progress_bin
 
     return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
@@ -88,46 +118,48 @@ def state_translator(observation, env):
 # training parameters
 #===========================
 
-NUM_STATES = 72 #2 directions, 3 grasp, 3 speed, 4 progress
+NUM_STATES = 288  # 2 direction x 4 goal × 3 grasp × 3 speed × 4 progress
 NUM_ACTIONS = 5
-LEARNING_RATE = 0.1 #ALPHA -> how fast to update q-values
-DISCOUNT = 0.99 #GAMMA -> future reward importance
-EPSILON = 1.0 #high epsilon = 100% exploration rate
-EPSILON_DECAY = 0.99 #the rate at which exploration will be reduced, prioritizing exploitation
-MIN_EPSILON = 0.01 #Always explore at least 1%
-NUM_EPISODES = 2000 #EPISODES TO TRAIN
-MAX_STEPS = 300
+LEARNING_RATE = 0.3 #lowered from 0.1 -- need to preserve existing knowledge
+DISCOUNT = 0.99 #GAMMA -> long-horizong importance
+EPSILON = 0.9 
+EPSILON_DECAY = 0.998 #increased from 0.995 to 0.997 - prioritizing exploioration
+MIN_EPSILON = 0.05 #increased to 5% - maintain exploration
+NUM_EPISODES = 2000 #EPISODES TO TRAIN - 1000 for each goal
+MAX_STEPS = 400 
 DEVICE = 'cpu'
-GOAL = 90 #Start small, increase once agent learns (30->45->60->90)
+GOAL = [30, 60, 90] #180, 270, 360] #Start small, increase once agent learns (30->45->60->90)
 ACTION_NAMES = {
     0: "GRASP",
     1: "RELEASE",
-    2: "ROTATE",
+    2: "ROT_POS",   # Rotate toward +Z (positive direction)
     3: "HOLD",
-    4: "ROT_REV"
+    4: "ROT_NEG"    # Rotate toward -Z (negative direction)
 }
 
 #==========================
 # INITIALIZE THE Q-TABLE: 9 rows/states, 2 columns/actions
 #==========================
-print("Initializing q-table")
-q_table = np.zeros((NUM_STATES, NUM_ACTIONS))
-print("\nq-table initialized with zeros")
-print("\nQ-table shape: ", q_table.shape)
+import os
 
-#==========================
-# initialize environment and the discrete translator
-#==========================
+Q_TABLE_PATH = 'q_table.npy'
 
-base_env = CanRotateEnv(GOAL, render_mode="headless")
-env = ActionTranslator(base_env)
+if os.path.exists(Q_TABLE_PATH):
+    print(f"Loading existing Q-table from {Q_TABLE_PATH}")
+    q_table = np.load(Q_TABLE_PATH)
+    print(f"Loaded Q-table shape: {q_table.shape}")
 
-# DEBUG: Print geom IDs to verify they're valid
-print("\n=== DEBUG: Geom IDs ===")
-print(f"Fingertip geom IDs: {base_env.fingertip_geom_ids}")
-print(f"Cube geom IDs: {base_env.can_geom_ids}")
-print(f"Any -1 in fingertips? {-1 in base_env.fingertip_geom_ids}")
-print("========================\n")
+    # Verify shape matches current state/action space
+    if q_table.shape != (NUM_STATES, NUM_ACTIONS):
+        print(f"Warning: Shape mismatch! Expected ({NUM_STATES}, {NUM_ACTIONS})")
+        print("Initializing new Q-table with zeros")
+        q_table = np.zeros((NUM_STATES, NUM_ACTIONS))
+else:
+    print("No existing Q-table found. Initializing with zeros")
+    q_table = np.zeros((NUM_STATES, NUM_ACTIONS))
+
+print(f"Q-table shape: {q_table.shape}")
+
 
 #==========================
 # training loop
@@ -136,17 +168,25 @@ print("Starting training...")
 os.makedirs("termination_snap", exist_ok=True) #collect images of termination
 reward_tracker = []
 
+#init environment with target of 15 degrees
+base_env = CanRotateEnv(target_degrees=15, render_mode="headless")
+env = ActionTranslator(base_env)
+
 for episode in range(NUM_EPISODES):
+        
+    #randomizing the goal for each episode
+    goal = np.random.choice(GOAL)
+
+    base_env.rotation_goal_delta = np.deg2rad(goal)
+
+
     observation,_ = env.reset() #reset env for before each episode begins
     state, progress_bin, grasp_bin, speed_bin, z_rot, goal_prog = state_translator(observation, env)
     step = 0
     total_reward = 0.0
     done = False
+    base = env.unwrapped
 
-    print("\n" + "-" * 70)
-    print("Step | Action   | State | Z-Rot  | Speed | Progress | Reward")
-    print("-" * 70)
-    
     while step < MAX_STEPS:
         if np.random.uniform(0,1) < EPSILON: #agent will prefer exploration initially, until the epsilon decays
             action = env.action_space.sample() #returns 0 for grasp or 1 for rotate
@@ -162,53 +202,47 @@ for episode in range(NUM_EPISODES):
         total_reward += reward
         step += 1
 
-        if step % 10 == 0 or terminated or truncated:
-            print("\n" + "-" * 70)
-            print("Step | Action   | State | Z-Rot  | Speed | Progress | Reward")
-            print("-" * 70)
-
-            action_name = ACTION_NAMES.get(int(action), "???")
-            print(f"{step:4d} | {action_name:8s} | {new_state:5d} | {np.rad2deg(z_rot):6.1f} | {speed_bin:5d} | {progress_bin:8d} | {reward:7.2f}")
 
 
         #old q-score for state, action
-        prev_q = q_table[state, action]
 
-        #best possible score for the new state (0 if terminal)
-        if terminated or truncated:
-            best_future_q = 0
+        if terminated:
+            if goal_prog < np.deg2rad(5):
+                best_future_q = np.max(q_table[new_state]) #goal achieved
+            else:
+                best_future_q = 0 #dropped cube - true failure
+                
+            prev_q = q_table[state, action]
+            new_q = prev_q + LEARNING_RATE * (reward + DISCOUNT * best_future_q - prev_q)
+            q_table[state, action] = new_q            
+            break
+        
+        elif truncated:
+            best_future_q = np.max(q_table[new_state]) #time limit reached - not a failure
         else:
             best_future_q = np.max(q_table[new_state])
 
+        prev_q = q_table[state, action]
         new_q = prev_q + LEARNING_RATE * (reward + DISCOUNT * best_future_q - prev_q)
 
         q_table[state,action] = new_q
 
         state = new_state
 
-        if terminated:
-            print(f"\n*** TERMINATED at step {step} ***")
-            if goal_prog < np.deg2rad(5):
-                best_future_q = np.max(q_table[new_state]) #goal achieved
-            else:
-                print("Cube dropped or other termination condition")
-                best_future_q = 0 #dropped cube - true failure
-        elif truncated:
-            print(f"\n*** TRUNCATED at step {step} (max steps reached) ***")
-            best_future_q = np.max(q_table[new_state]) #time limit reached - not a failure
-        else:
-            best_future_q = np.max(q_table[new_state])
+
 
     
     reward_tracker.append(total_reward)
 
     #adjust policy
     EPSILON = max(MIN_EPSILON, EPSILON * EPSILON_DECAY)
+    if (episode + 1) % 100 == 0:
+        np.save(f'q_table_checkpoint_{episode+1}.npy', q_table)
 
-    if (episode + 1) % 10 == 0:
-        average_reward = np.mean(reward_tracker[-50:])
-        print(f"Episode {episode+1}/{NUM_EPISODES} - Avg Reward: {average_reward:.2f} - Epsilon: {EPSILON:.3f} - Steps: {step}")
+    if (episode + 1) % 25 == 0:
+        average_reward = np.mean(reward_tracker[-25:])
+        print(f"Episode {episode+1}/{NUM_EPISODES} | Avg Reward: {average_reward:.2f} | Epsilon: {EPSILON:.3f} | Last Goal: {goal}° | Final Z-Rot: {np.rad2deg(z_rot):.1f}°")
 
 
-np.save('q_table.npy', q_table)
-print("model saved as q_table.npy")
+np.save('q_table_final.npy', q_table)
+print("model saved as q_table_final.npy")
