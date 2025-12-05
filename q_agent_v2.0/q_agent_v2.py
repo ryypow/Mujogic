@@ -1,6 +1,7 @@
 """
-Q-Learning V2 for cube rotation with RELATIVE progress bins
-- 36 states (3 grasp x 3 speed x 4 progress)
+Q-Learning V2.1 for cube rotation with FINER progress bins
+- 54 states (3 grasp x 3 speed x 6 progress)
+- 6 progress bins for finer granularity (was 4)
 - Relative progress bins that scale to any goal (45, 60, 90, etc.)
 - Curriculum learning: start small, increase goal progressively
 """
@@ -17,6 +18,7 @@ def state_translator(observation, env):
     """
     Convert continuous observation to discrete state ID.
     Uses RELATIVE progress bins that scale to any goal size.
+    V2.1: Increased to 6 progress bins for finer control.
     """
     base_env = env.unwrapped
 
@@ -32,22 +34,27 @@ def state_translator(observation, env):
     # Goal progress (how far from target)
     goal = base_env.target_rotation
     goal_progress = abs(goal - z_rotation)
-    goal_abs = abs(goal)
+    goal_abs = abs(base_env.rotation_goal_delta)  # Use delta, not absolute target
 
-    # RELATIVE progress bins (scales to any goal size)
+    # RELATIVE progress bins - 6 bins for finer control
     if goal_abs > 0:
         progress_ratio = goal_progress / goal_abs
     else:
         progress_ratio = 0
 
-    if progress_ratio > 0.7:
-        progress_bin = 0  # far (>70% remaining)
-    elif progress_ratio > 0.3:
-        progress_bin = 1  # medium (30-70% remaining)
-    elif progress_ratio > 0.1:
-        progress_bin = 2  # close (10-30% remaining)
+    # 6 progress bins (was 4) - more granular for better learning
+    if progress_ratio > 0.80:
+        progress_bin = 0  # very far (>80% remaining)
+    elif progress_ratio > 0.60:
+        progress_bin = 1  # far (60-80% remaining)
+    elif progress_ratio > 0.40:
+        progress_bin = 2  # medium (40-60% remaining)
+    elif progress_ratio > 0.20:
+        progress_bin = 3  # close (20-40% remaining)
+    elif progress_ratio > 0.10:
+        progress_bin = 4  # very close (10-20% remaining)
     else:
-        progress_bin = 3  # at goal (<10% remaining)
+        progress_bin = 5  # at goal (<10% remaining)
 
     # Grasp strength bin (finger contact)
     fingers_in_contact = set()
@@ -82,8 +89,8 @@ def state_translator(observation, env):
     else:
         speed_bin = 2  # fast
 
-    # State ID: 36 states total
-    state_id = grasp_bin * 12 + speed_bin * 4 + progress_bin
+    # State ID: 54 states total (3 grasp x 3 speed x 6 progress)
+    state_id = grasp_bin * 18 + speed_bin * 6 + progress_bin
 
     return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
@@ -91,7 +98,7 @@ def state_translator(observation, env):
 # ============================
 # Training Parameters
 # ============================
-NUM_STATES = 36   # 3 grasp x 3 speed x 4 progress
+NUM_STATES = 54   # 3 grasp x 3 speed x 6 progress (was 36)
 NUM_ACTIONS = 5   # GRASP, RELEASE, ROT_POS, HOLD, ROT_NEG
 LEARNING_RATE = 0.15
 DISCOUNT = 0.99

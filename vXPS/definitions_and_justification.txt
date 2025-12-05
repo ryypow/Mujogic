@@ -1,0 +1,118 @@
+Project 3.1
+Powers, Ryan
+CAP5625: Intro to AI
+Dr.Sun
+
+This text file will define and explain the state space, action space, and reward function.
+
+=======================================================================
+									STATE SPACE
+=========================================================================
+-The state space is the orientation and angles of each component of the robotic arm/hand.
+-The arm consists of: shoulder_pan_joint, shoulder_lift_joint, elbow_joint, and three wrist joints
+-The hand:
+		-Consists of 16 joints, which is the state space we will be working with in this demonstration.
+		-The 16 hand joints make up the fingers, and their respective ID's are listed below:
+			-Finger1:
+				MCP: joint 1
+				PIP: joint 0
+				DIP: joint 2
+				Tip: joint 3
+					Tipsite: fingertip1_site
+			Finger 2:
+				MCP: 5
+				PIP: 4
+				DIP: 6
+				TIP: 7
+					Fingertip2_site
+			Finger3:
+				Mcp: 9
+				PIP: 8
+				DIP: 10
+				TIP: 11
+					Fingertip3_site
+			Thumb: 
+				CMC/PIP base: 12
+				Next: 13
+				Next: 14
+				TIP: 15
+					Thumb_fingertip
+
+		Each joint is defined in ur5e_leap.xml and each joint category has a defined range of motion:
+			-MCP/metacarpophalange al Joint: 
+				-Range: -0.314 2.23 RADIAN 
+			-PIP: proximal interphalangeal joint
+				-Range: -1.047 1.047 RADIAN
+			-DIP: distal interphalangeal joint
+				-Range:  -0.506 1.885 RADIAN
+			-TIP: fingertip
+				-Range: -0.366 2.042 RADIAN
+The cubes:
+	-The simulation comes with two cubes made up of 6 box geoms, which are defined in scene.xml:
+		-Obj1
+		-Obj2
+	-Both objects are free joints, which are floating bodies, with 6 sides.
+	-The free joint objects both hold positional and orientation information:
+		-when the simulation begins, Obj1 is positioned on top of the palm:
+			-Palm_surface_pos + np.array([0.011, -0.03, 0.075])
+				-the array is the offset of the cube, relative to the palms positional
+		-Each "free joint" has 7 "qpos" values to describe the rotation and which axis it rotates around:
+			-3 values for position: x,y,z
+			-4 values for orientation: (w,x,y,z) quarternion
+				-w: scaler component
+				-x,y,z: vector component
+
+Summary: 
+-the state space consists of 23 dimensions:
+	-The orientation and angles of the 16 hand joints and 
+	-The 3 positional/4 orientational values for the cube
+
+===============================================================================
+							ACTION SPACE
+==============================================================================
+-The action space is the commands sent to the simulation, which results in a change of state
+-The actions will be continuous commands, manipulating the cube to a predefined target position and orientation.
+-The actions will consist of looping through each hand joint, adjusting the target positions of each joint
+-The target positions of each joint will be manipulated in a way that manipulates the cube.
+-Action space for Part 1:
+	-I experimented with both inhand_env.py and hand_movement_test.py. The changes are outlined below:
+			-Inhand_env.py modifications:
+				-lowered MAX_EPISODE_STEPS to make the random agent simulation finish quicker
+				-experimented with CanRotateEnv.action_space, changing the low and high RAD values to see how it impacts the random agent moves.
+				-Increased the duration of each step
+			-hand_movement_test.py modifications: 
+				-I changed the hard-coded DOF array so that each DOF joint moves randomly between -2.0 and 2.0
+					-np.random.uniform(-2.0,2.0,size=16)
+				-I  used low=-2.0 and high=2.0 to see how MuJoCo would handle a action command, outside of the defined joint range
+				-Results show that it did not cause any errors
+					-After looking into it further, I learned that these values are control targets, and not direct positions
+					-The MuJoCo will attempt to reach the control targets, but implicitly respects the joint limits defined in the xml
+
+-The action space I will use in part 2 will be much smaller than -2.0/2.0, probably around +- 0.05
+	-This is due to the 16 DOF joints working together collectively do not need that large of an adjustment
+	-The joints working together produce what I found is called Kinematic Coupling or Kinematic Redundancy
+	-The synergistic control of multiple fingers means that small increments to each individual joint should allow the hand to achieve the goal
+		smoothly and efficiently.
+	
+===============================================================================
+							REWARD FUNCTION
+==============================================================================				
+The reward function currently consists of three components:
+	1. rotation_reward: rewards for rotating the cube around the z-axis
+		This component has a weight of 10, making this component have a large impact on the agents decisions
+		
+	2. survival reward: This penalizes the distance of the cube from the palm
+		-This forces the agent to avoid dropping the cube
+		
+	3. contact reward: This gives a bonus if three fingers are touching the objects
+		-This encourages the agent to grasp the object with all fingers
+		-5.0 weight for all 3 fingers and if there isn't 3 fingers grasping, 0.5 per fingers
+		
+For the next parts of the project, I will include:
+	1. speed reward: as the episode count increases, the time penalty will increases
+		-this will encourage the agent to be more efficient and accurate with its movements
+		
+	2. Progress reward: This will reward the agent for moving the object towards the goal orientation/position.
+		-This will teach the agent to prioritize moving towards our expected goal
+		
+	

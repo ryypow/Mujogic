@@ -1,14 +1,17 @@
-# inhand_env.py (Final Corrected Version)
+# inhand_env.py (v3
 import os
 import numpy as np
 import mujoco
 import mujoco.viewer as mjv
 import gymnasium as gym
 from gymnasium import spaces
+from scipy.spatial.transform import Rotation as R
 
 from simulation import Simulation
 
 MAX_EPISODE_STEPS = 300
+TARGET_ROTATION = -90.0  # degrees (negative direction based on testing)
+TARGET_TOLERANCE = 5.0   # degrees - how close is "success"
 
 class CanRotateEnv(gym.Env):
     metadata = {'render_modes': ['human'], 'render_fps': 30}
@@ -36,16 +39,54 @@ class CanRotateEnv(gym.Env):
         }
         
         # Define action and observation spaces
-        self.action_space = spaces.Box(low=-0.03, high=0.03, shape=(16,), dtype=np.float32)
+        self.action_space = spaces.Discrete(5)
         obs_size = len(self.sim.hand_joint_ids) + 7
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32)
+# TODO        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32)
 
         self.render_mode = render_mode
         if render_mode == 'human':
-            self.viewer = mjv.launch_passive(self.sim.model, self.sim.data) 
+            self.viewer = mjv.launch_passive(self.sim.model, self.sim.data)
         else:
             self.viewer = None
         self.step_count = 0
+        self.rotation_goal_delta = TARGET_ROTATION  # Total rotation needed
+        self.prev_z_rotation = None  # Track previous rotation for reward calc
+
+    def get_object_z_rotation(self):
+        """
+        Calculates the Z-axis rotation of an object from its quaternion.
+        """
+        # Get the quaternion (w, x, y, z) from MuJoCo data
+        quat_wxyz = self.sim.data.xquat[self.obj_body_id]
+        
+        # Scipy's Rotation object expects (x, y, z, w)
+        quat_xyzw = [quat_wxyz[1], quat_wxyz[2], quat_wxyz[3], quat_wxyz[0]]
+        
+        # Create a Rotation object
+        r = R.from_quat(quat_xyzw)
+        
+        # Convert to Euler angles (xyz order) in degrees
+        euler_angles_deg = r.as_euler('xyz', degrees=True)
+        
+        # Return the Z-axis rotation
+        return euler_angles_deg[2]
+
+    def print_object_status(self):
+        """Prints the object's current position and Z rotation."""
+        
+        # We must call mj_forward() to ensure all physics-derived
+        # values (like xpos and xquat) are up-to-date.
+        mujoco.mj_forward(self.sim.model, self.sim.data)
+                
+        # Get object position
+        obj_pos = self.sim.data.xpos[self.obj_body_id]
+        
+        # Get object Z rotation
+        obj_z_rot = self.get_object_z_rotation()
+        
+        # Print to console
+        print(f"  > Object Position (x, y, z):  ({obj_pos[0]:.4f}, {obj_pos[1]:.4f}, {obj_pos[2]:.4f})")
+        print(f"  > Object Z Rotation (degrees): {obj_z_rot:.2f}°")
 
     def _get_obs(self):
         finger_qpos = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) #
@@ -54,49 +95,103 @@ class CanRotateEnv(gym.Env):
         object_pose = self.sim.data.qpos[obj_qpos_adr : obj_qpos_adr + 7] #
         return np.concatenate([finger_qpos, object_pose])
 
-    def _calculate_reward(self):
-        # --- Rotation and Survival Rewards ---
+    def _calculate_reward(self, cube_rotation_new, cube_rotation_prev):
+
+
         obj_vel = np.zeros(6)
         mujoco.mj_objectVelocity(self.sim.model, self.sim.data, mujoco.mjtObj.mjOBJ_BODY, self.obj_body_id, obj_vel, 0)
         angular_velocity_z = obj_vel[2]
-        rotation_reward = angular_velocity_z * 10.0
-        
+
+        current_distance = abs(TARGET_ROTATION - cube_rotation_new)
+        goal_distance = abs(self.rotation_goal_delta)  # Total rotation needed (e.g., 45°, 60°, 90°)
+
+        # === Percentage-based progress with exponential scaling ===
+        progress_pct = 1.0 - (current_distance / goal_distance) if goal_distance > 0 else 1.0
+        progress_pct = max(0.0, min(1.0, progress_pct))  # Clamp to [0, 1]
+
+        # Exponential scaling: reward increases significantly as we get closer
+        # At 50% progress: multiplier ~1.5, at 90%: multiplier ~2.6
+        progress_multiplier = 1.0 + (progress_pct ** 2) * 2.0
+
+        if cube_rotation_prev is not None:
+            previous_distance = abs(TARGET_ROTATION - cube_rotation_prev)
+            progress_reward = (previous_distance - current_distance) * 100.0 * progress_multiplier
+        else:
+            progress_reward = 0.0
+
+        # === Milestone bonuses (curriculum-friendly) ===
+        milestone_bonus = 0.0
+        milestones = [0.25, 0.50, 0.75, 0.90]  # 25%, 50%, 75%, 90% of goal
+        milestone_values = [15.0, 35.0, 60.0, 100.0]  # Increasing rewards
+
+        if cube_rotation_prev is not None:
+            prev_pct = 1.0 - (abs(TARGET_ROTATION - cube_rotation_prev) / goal_distance) if goal_distance > 0 else 1.0
+            prev_pct = max(0.0, min(1.0, prev_pct))
+            for threshold, bonus in zip(milestones, milestone_values):
+                # Award bonus when crossing a milestone threshold
+                if prev_pct < threshold <= progress_pct:
+                    milestone_bonus += bonus
+
+        # === Scaled completion bonus ===
+        if current_distance < TARGET_TOLERANCE:
+            # Base 150 + up to 150 more for hitting it precisely
+            precision_bonus = (1.0 - current_distance / TARGET_TOLERANCE) * 150.0
+            nearTarget_bonus = 150.0 + precision_bonus
+        else:
+            nearTarget_bonus = 0.0
+
+        # Direction-aware rotation reward
+        direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
+
+        if cube_rotation_prev is not None:
+            rotation_change = cube_rotation_new - cube_rotation_prev
+            # Increased base rotation reward
+            rotation_reward = direction_to_target * rotation_change * 80.0
+
+            # Wrong direction penalty (stronger)
+            moving_wrong_way = (direction_to_target > 0 and rotation_change < 0) or \
+                              (direction_to_target < 0 and rotation_change > 0)
+            drift_penalty = abs(rotation_change) * 70.0 if moving_wrong_way else 0.0
+        else:
+            rotation_reward = 0.0
+            drift_penalty = 0.0
+
+        # ===Stagnation penalty ===
+        stagnation_penalty = 0.0
+        if cube_rotation_prev is not None:
+            rotation_change_abs = abs(cube_rotation_new - cube_rotation_prev)
+            # If barely moving AND far from goal, penalize
+            if rotation_change_abs < np.deg2rad(0.3) and progress_pct < 0.80:
+                # Stronger penalty when further from goal
+                stagnation_penalty = 1.0 * (1.0 - progress_pct)
+
+        # Survival reward
         can_pos = self.sim.data.xpos[self.obj_body_id]
         palm_pos = self.sim.data.site_xpos[self.site_id]
         distance_from_palm = np.linalg.norm(can_pos - palm_pos)
-        survival_reward = 0.1 - distance_from_palm
+        survival_reward = 0.01 - (distance_from_palm * 0.5)  # Reduced
 
-        # --- Contact Reward ---
+        # Contact reward
         contact_reward = 0.0
-        
-        # Use a set to count unique fingers touching the can
         fingers_in_contact = set()
-
-        # Iterate through all contacts in the current simulation step
         for i in range(self.sim.data.ncon):
             contact = self.sim.data.contact[i]
-            geom1 = contact.geom1
-            geom2 = contact.geom2
-
-            # Check if one of the geometries is the can and the other is a fingertip
-            is_geom1_fingertip = geom1 in self.fingertip_geom_ids
-            is_geom2_fingertip = geom2 in self.fingertip_geom_ids
-            is_geom1_can = geom1 == self.can_geom_id
-            is_geom2_can = geom2 == self.can_geom_id
-
-            if (is_geom1_fingertip and is_geom2_can):
+            geom1, geom2 = contact.geom1, contact.geom2
+            if geom1 in self.fingertip_geom_ids and geom2 == self.can_geom_id:
                 fingers_in_contact.add(geom1)
-            elif (is_geom2_fingertip and is_geom1_can):
+            elif geom2 in self.fingertip_geom_ids and geom1 == self.can_geom_id:
                 fingers_in_contact.add(geom2)
-        
-        # Give a bonus if three specified fingers are touching the can
+
         if len(fingers_in_contact) >= 3:
-            contact_reward = 5.0  # Large, one-time bonus for achieving the grasp
+            contact_reward = 0.3
         elif len(fingers_in_contact) > 0:
-            contact_reward = 0.5 * len(fingers_in_contact) # Smaller reward for partial contact
-            
-        # Combine all reward components
-        total_reward = rotation_reward + survival_reward + contact_reward
+            contact_reward = 0.08 * len(fingers_in_contact)
+
+        # === Total reward calculation ===
+        total_reward = (progress_reward + milestone_bonus + nearTarget_bonus +
+                       rotation_reward + survival_reward + contact_reward
+                        - drift_penalty - stagnation_penalty)
+
         return total_reward
 
     def _is_terminated(self):
@@ -131,7 +226,11 @@ class CanRotateEnv(gym.Env):
         for _ in range(20):
             mujoco.mj_step(self.sim.model, self.sim.data) #
 
-        q_open_angles = np.array([1.0, 0.3, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.3, 1.0, 1.3, 1.0, 0.8, 1.3, 0.8, 0.5]) #
+        q_open_angles = np.array(  [1.0, -0.3, 0.7, 0.7,  # Finger 1 (open)
+            1.0, -0.3, 0.8, 0.8,   # Finger 2
+            1.3, 1.5, 1.0, 1.4,   # Finger 3 
+            -0.3, 1.4, 1.0, 2.0]) #thumb
+        
         self.sim.set_joint_positions(self.sim.hand_joint_ids, q_open_angles) #
         for i, act_id in enumerate(self.sim.hand_act_ids):
             self.sim.data.ctrl[act_id] = q_open_angles[i] #
@@ -144,18 +243,27 @@ class CanRotateEnv(gym.Env):
         return self._get_obs(), {}
 
     def step(self, action):
+        # Get rotation BEFORE action
+        z_rot_before = self.get_object_z_rotation()
+
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
-        self.sim.move_gripper_to_angles(target_angles, 0.5) #
+        self.sim.move_gripper_to_angles(target_angles, 0.5)
 
         if self.render_mode != "headless":
             self.viewer.sync()
 
         self.step_count += 1
-        
+
+        # Get rotation AFTER action
+        z_rot_after = self.get_object_z_rotation()
+
         observation = self._get_obs()
-        reward = self._calculate_reward()
+        reward = self._calculate_reward(z_rot_after, z_rot_before)
         terminated = self._is_terminated()
         truncated = self.step_count >= MAX_EPISODE_STEPS
+
+        # Store for next step
+        self.prev_z_rotation = z_rot_after
 
         return observation, reward, terminated, truncated, {}
 
