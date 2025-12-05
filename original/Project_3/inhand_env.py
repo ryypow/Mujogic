@@ -6,10 +6,13 @@ import mujoco.viewer as mjv
 import gymnasium as gym
 from gymnasium import spaces
 from scipy.spatial.transform import Rotation as R
+from scipy.spatial.transform import Rotation as R
 
 from simulation import Simulation
 
 MAX_EPISODE_STEPS = 300
+TARGET_ROTATION = -90.0  # degrees (negative direction based on testing)
+TARGET_TOLERANCE = 5.0   # degrees - how close is "success"
 TARGET_ROTATION = -90.0  # degrees (negative direction based on testing)
 TARGET_TOLERANCE = 5.0   # degrees - how close is "success"
 
@@ -40,15 +43,56 @@ class CanRotateEnv(gym.Env):
         
         # Define action and observation spaces
         self.action_space = spaces.Discrete(5)
+        self.action_space = spaces.Discrete(5)
         obs_size = len(self.sim.hand_joint_ids) + 7
+# TODO        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32)
 # TODO        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32)
 
         self.render_mode = render_mode
         if render_mode == 'human':
             self.viewer = mjv.launch_passive(self.sim.model, self.sim.data)
+            self.viewer = mjv.launch_passive(self.sim.model, self.sim.data)
         else:
             self.viewer = None
         self.step_count = 0
+        self.rotation_goal_delta = TARGET_ROTATION  # Total rotation needed
+        self.prev_z_rotation = None  # Track previous rotation for reward calc
+
+    def get_object_z_rotation(self):
+        """
+        Calculates the Z-axis rotation of an object from its quaternion.
+        """
+        # Get the quaternion (w, x, y, z) from MuJoCo data
+        quat_wxyz = self.sim.data.xquat[self.obj_body_id]
+        
+        # Scipy's Rotation object expects (x, y, z, w)
+        quat_xyzw = [quat_wxyz[1], quat_wxyz[2], quat_wxyz[3], quat_wxyz[0]]
+        
+        # Create a Rotation object
+        r = R.from_quat(quat_xyzw)
+        
+        # Convert to Euler angles (xyz order) in degrees
+        euler_angles_deg = r.as_euler('xyz', degrees=True)
+        
+        # Return the Z-axis rotation
+        return euler_angles_deg[2]
+
+    def print_object_status(self):
+        """Prints the object's current position and Z rotation."""
+        
+        # We must call mj_forward() to ensure all physics-derived
+        # values (like xpos and xquat) are up-to-date.
+        mujoco.mj_forward(self.sim.model, self.sim.data)
+                
+        # Get object position
+        obj_pos = self.sim.data.xpos[self.obj_body_id]
+        
+        # Get object Z rotation
+        obj_z_rot = self.get_object_z_rotation()
+        
+        # Print to console
+        print(f"  > Object Position (x, y, z):  ({obj_pos[0]:.4f}, {obj_pos[1]:.4f}, {obj_pos[2]:.4f})")
+        print(f"  > Object Z Rotation (degrees): {obj_z_rot:.2f}°")
         self.rotation_goal_delta = TARGET_ROTATION  # Total rotation needed
         self.prev_z_rotation = None  # Track previous rotation for reward calc
 
@@ -94,6 +138,9 @@ class CanRotateEnv(gym.Env):
         obj_qpos_adr = self.sim.model.jnt_qposadr[obj_jnt_adr] #
         object_pose = self.sim.data.qpos[obj_qpos_adr : obj_qpos_adr + 7] #
         return np.concatenate([finger_qpos, object_pose])
+
+    def _calculate_reward(self, cube_rotation_new, cube_rotation_prev):
+
 
     def _calculate_reward(self, cube_rotation_new, cube_rotation_prev):
 
@@ -170,7 +217,9 @@ class CanRotateEnv(gym.Env):
         palm_pos = self.sim.data.site_xpos[self.site_id]
         distance_from_palm = np.linalg.norm(can_pos - palm_pos)
         survival_reward = 0.01 - (distance_from_palm * 0.5)  # Reduced
+        survival_reward = 0.01 - (distance_from_palm * 0.5)  # Reduced
 
+        # Contact reward
         # Contact reward
         contact_reward = 0.0
         fingers_in_contact = set()
@@ -178,13 +227,25 @@ class CanRotateEnv(gym.Env):
             contact = self.sim.data.contact[i]
             geom1, geom2 = contact.geom1, contact.geom2
             if geom1 in self.fingertip_geom_ids and geom2 == self.can_geom_id:
+            geom1, geom2 = contact.geom1, contact.geom2
+            if geom1 in self.fingertip_geom_ids and geom2 == self.can_geom_id:
                 fingers_in_contact.add(geom1)
+            elif geom2 in self.fingertip_geom_ids and geom1 == self.can_geom_id:
             elif geom2 in self.fingertip_geom_ids and geom1 == self.can_geom_id:
                 fingers_in_contact.add(geom2)
 
+
         if len(fingers_in_contact) >= 3:
             contact_reward = 0.3
+            contact_reward = 0.3
         elif len(fingers_in_contact) > 0:
+            contact_reward = 0.08 * len(fingers_in_contact)
+
+        # === Total reward calculation ===
+        total_reward = (progress_reward + milestone_bonus + nearTarget_bonus +
+                       rotation_reward + survival_reward + contact_reward
+                        - drift_penalty - stagnation_penalty)
+
             contact_reward = 0.08 * len(fingers_in_contact)
 
         # === Total reward calculation ===
@@ -202,7 +263,8 @@ class CanRotateEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         self.step_count = 0
-        
+        self.prev_z_rotation = None  # Reset rotation tracking for new episode
+
         mujoco.mj_resetData(self.sim.model, self.sim.data)
 
         target_pos_up = np.array([0.4, 0.0, .5]) #
@@ -231,6 +293,11 @@ class CanRotateEnv(gym.Env):
             1.3, 1.5, 1.0, 1.4,   # Finger 3 
             -0.3, 1.4, 1.0, 2.0]) #thumb
         
+        q_open_angles = np.array(  [1.0, -0.3, 0.7, 0.7,  # Finger 1 (open)
+            1.0, -0.3, 0.8, 0.8,   # Finger 2
+            1.3, 1.5, 1.0, 1.4,   # Finger 3 
+            -0.3, 1.4, 1.0, 2.0]) #thumb
+        
         self.sim.set_joint_positions(self.sim.hand_joint_ids, q_open_angles) #
         for i, act_id in enumerate(self.sim.hand_act_ids):
             self.sim.data.ctrl[act_id] = q_open_angles[i] #
@@ -246,7 +313,11 @@ class CanRotateEnv(gym.Env):
         # Get rotation BEFORE action
         z_rot_before = self.get_object_z_rotation()
 
+        # Get rotation BEFORE action
+        z_rot_before = self.get_object_z_rotation()
+
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
+        self.sim.move_gripper_to_angles(target_angles, 0.5)
         self.sim.move_gripper_to_angles(target_angles, 0.5)
 
         if self.render_mode != "headless":
@@ -257,10 +328,18 @@ class CanRotateEnv(gym.Env):
         # Get rotation AFTER action
         z_rot_after = self.get_object_z_rotation()
 
+
+        # Get rotation AFTER action
+        z_rot_after = self.get_object_z_rotation()
+
         observation = self._get_obs()
+        reward = self._calculate_reward(z_rot_after, z_rot_before)
         reward = self._calculate_reward(z_rot_after, z_rot_before)
         terminated = self._is_terminated()
         truncated = self.step_count >= MAX_EPISODE_STEPS
+
+        # Store for next step
+        self.prev_z_rotation = z_rot_after
 
         # Store for next step
         self.prev_z_rotation = z_rot_after
@@ -288,3 +367,4 @@ class CanRotateEnv(gym.Env):
         if self.viewer:
             self.viewer.close()
             self.viewer = None
+

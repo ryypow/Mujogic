@@ -1,0 +1,1031 @@
+  90 | ROTATE   |     0 |  -19.8 |     0 |        0 |   -0.00
+ 100 | ROT_REV  |     0 |  -20.1 |     0 |        0 |    0.03
+ 110 | ROT_REV  |     0 |  -19.7 |     0 |        0 |    0.03
+ 120 | RELEASE  |     0 |  -19.7 |     0 |        0 |    0.03
+ 130 | GRASP    |     0 |  -18.8 |     0 |        0 |    0.14
+ 140 | GRASP    |     0 |  -24.4 |     0 |        0 |    0.13
+ 150 | ROTATE   |     0 |  -23.6 |     0 |        0 |   -0.02
+ 160 | RELEASE  |     0 |  -25.6 |     0 |        0 |   -0.92
+ 170 | ROTATE   |     0 |  -25.7 |     0 |        0 |    0.01
+ 180 | ROT_REV  |     0 |  -25.1 |     0 |        0 |    0.02
+ 190 | HOLD     |     0 |  -26.4 |     0 |        0 |    0.03
+ 200 | RELEASE  |     0 |  -31.6 |     0 |        0 |    0.02
+ 210 | ROTATE   |     0 |  -31.6 |     0 |        0 |    0.02
+ 220 | ROT_REV  |     0 |  -31.6 |     0 |        0 |    0.03
+ 230 | ROTATE   |     0 |  -31.6 |     0 |        0 |    0.03
+ 240 | GRASP    |     0 |  -37.8 |     0 |        0 |    0.02
+ 250 | ROTATE   |     0 |  -38.8 |     0 |        0 |    0.02
+ 260 | GRASP    |     4 |  -41.5 |     1 |        0 |   -1.54
+ 270 | ROT_REV  |     0 |  -42.6 |     0 |        0 |   -0.03
+ 280 | ROT_REV  |     0 |  -42.8 |     0 |        0 |    0.04
+ 290 | GRASP    |     0 |  -42.3 |     0 |        0 |    0.03
+ 300 | ROT_REV  |     0 |  -42.6 |     0 |        0 |    0.04
+
+*** TRUNCATED at step 300 (max steps reached) ***
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | HOLD     |     0 |  -15.9 |     0 |        0 |   -2.46
+  20 | HOLD     |     0 |   -8.4 |     0 |        0 |    0.02
+  30 | ROT_REV  |     0 |   -8.0 |     0 |        0 |    0.13
+  40 | ROTATE   |     0 |   -7.2 |     0 |        0 |    0.10
+  50 | ROT_REV  |     0 |   -5.7 |     0 |        0 |    0.07
+  60 | HOLD     |     0 |   -5.9 |     0 |        0 |    0.04
+  70 | GRASP    |     0 |   -5.0 |     0 |        0 |    0.13
+  80 | RELEASE  |     4 |  -11.2 |     1 |        0 |   -2.32
+  90 | ROTATE   |     0 |  -14.0 |     0 |        0 |    0.07
+ 100 | HOLD     |     0 |  -11.8 |     0 |        0 |   -0.10
+ 110 | ROTATE   |     0 |  -12.1 |     0 |        0 |    0.23
+ 120 | HOLD     |     0 |  -16.4 |     0 |        0 |   -0.11
+ 130 | GRASP    |     0 |  -16.2 |     0 |        0 |    0.28
+ 140 | ROTATE   |     0 |  -11.7 |     0 |        0 |    0.00
+ 150 | ROTATE   |     0 |  -11.1 |     0 |        0 |    0.05
+ 160 | ROTATE   |     0 |  -11.5 |     0 |        0 |    0.04
+ 170 | RELEASE  |     0 |  -11.8 |     0 |        0 |    0.11
+ 180 | HOLD     |     0 |  -12.3 |     0 |        0 |    0.05
+ 190 | HOLD     |     0 |   -9.5 |     0 |        0 |    0.06
+ 200 | ROTATE   |     0 |   -4.0 |     0 |        0 |    0.46
+ 210 | RELEASE  |     1 |    2.4 |     0 |        1 |    0.14
+ 220 | GRASP    |     1 |    3.7 |     0 |        1 |    0.02
+ 230 | RELEASE  |     1 |   11.0 |     0 |        1 |    0.25
+ 240 | ROT_REV  |     6 |   21.4 |     1 |        2 |    1.04
+ 242 | RELEASE  |     7 |   25.8 |     1 |        3 |   22.90
+
+*** TERMINATED at step 242 ***
+ 243 | RELEASE  |     3 |   26.6 |     0 |        3 |   20.14
+
+*** TERMINATED at step 243 ***
+ 244 | RELEASE  |     3 |   26.6 |     0 |        3 |   20.00
+
+*** TERMINATED at step 244 ***
+ 245 | HOLD     |     3 |   26.5 |     0 |        3 |   20.01
+
+*** TERMINATED at step 245 ***
+ 246 | ROT_REV  |     3 |   26.5 |     0 |        3 |   20.02
+
+*** TERMINATED at step 246 ***
+ 247 | ROT_REV  |     3 |   26.5 |     0 |        3 |   19.99
+
+*** TERMINATED at step 247 ***
+ 248 | HOLD     |     3 |   26.5 |     0 |        3 |   20.03
+
+*** TERMINATED at step 248 ***
+ 249 | RELEASE  |     3 |   26.4 |     0 |        3 |   20.02
+
+*** TERMINATED at step 249 ***
+ 250 | GRASP    |     3 |   26.4 |     0 |        3 |   20.00
+
+*** TERMINATED at step 250 ***
+ 251 | ROT_REV  |     3 |   26.4 |     0 |        3 |   19.99
+
+*** TERMINATED at step 251 ***
+ 252 | GRASP    |     3 |   26.4 |     0 |        3 |   20.01
+
+*** TERMINATED at step 252 ***
+ 253 | GRASP    |     3 |   25.7 |     0 |        3 |   19.63
+
+*** TERMINATED at step 253 ***
+ 254 | RELEASE  |     3 |   26.1 |     0 |        3 |   20.09
+
+*** TERMINATED at step 254 ***
+ 255 | HOLD     |     3 |   26.0 |     0 |        3 |   20.01
+
+*** TERMINATED at step 255 ***
+ 256 | ROTATE   |     3 |   26.0 |     0 |        3 |   20.03
+
+*** TERMINATED at step 256 ***
+ 257 | RELEASE  |     3 |   26.0 |     0 |        3 |   19.99
+
+*** TERMINATED at step 257 ***
+ 258 | ROT_REV  |     3 |   25.9 |     0 |        3 |   20.02
+
+*** TERMINATED at step 258 ***
+ 259 | HOLD     |     3 |   25.9 |     0 |        3 |   20.02
+
+*** TERMINATED at step 259 ***
+ 260 | ROT_REV  |     3 |   25.9 |     0 |        3 |   20.01
+
+*** TERMINATED at step 260 ***
+ 261 | RELEASE  |     3 |   25.9 |     0 |        3 |   20.00
+
+*** TERMINATED at step 261 ***
+ 262 | ROT_REV  |     3 |   25.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 262 ***
+ 263 | HOLD     |     3 |   25.8 |     0 |        3 |   19.99
+
+*** TERMINATED at step 263 ***
+ 264 | GRASP    |     3 |   25.7 |     0 |        3 |   19.88
+
+*** TERMINATED at step 264 ***
+ 269 | RELEASE  |     7 |   27.0 |     1 |        3 |   21.44
+
+*** TERMINATED at step 269 ***
+ 270 | GRASP    |     3 |   26.3 |     0 |        3 |   19.71
+
+*** TERMINATED at step 270 ***
+ 271 | GRASP    |     3 |   25.9 |     0 |        3 |   19.91
+
+*** TERMINATED at step 271 ***
+ 272 | GRASP    |     3 |   25.7 |     0 |        3 |   19.81
+
+*** TERMINATED at step 272 ***
+ 273 | RELEASE  |     3 |   28.2 |     0 |        3 |   20.48
+
+*** TERMINATED at step 273 ***
+ 274 | ROT_REV  |     3 |   27.8 |     0 |        3 |   19.79
+
+*** TERMINATED at step 274 ***
+ 275 | ROT_REV  |     3 |   27.3 |     0 |        3 |   19.82
+
+*** TERMINATED at step 275 ***
+ 276 | ROTATE   |     3 |   27.0 |     0 |        3 |   19.82
+
+*** TERMINATED at step 276 ***
+ 277 | ROT_REV  |     3 |   26.8 |     0 |        3 |   19.88
+
+*** TERMINATED at step 277 ***
+ 278 | RELEASE  |     3 |   28.8 |     0 |        3 |   20.35
+
+*** TERMINATED at step 278 ***
+ 279 | GRASP    |     3 |   28.6 |     0 |        3 |   19.90
+
+*** TERMINATED at step 279 ***
+ 280 | ROTATE   |     3 |   28.4 |     0 |        3 |   20.03
+
+*** TERMINATED at step 280 ***
+ 281 | RELEASE  |     3 |   29.3 |     0 |        3 |   20.18
+
+*** TERMINATED at step 281 ***
+ 282 | ROT_REV  |     3 |   29.2 |     0 |        3 |   20.02
+
+*** TERMINATED at step 282 ***
+ 283 | ROT_REV  |     3 |   29.1 |     0 |        3 |   19.90
+
+*** TERMINATED at step 283 ***
+ 284 | ROTATE   |     3 |   28.9 |     0 |        3 |   20.06
+
+*** TERMINATED at step 284 ***
+ 285 | ROT_REV  |     3 |   28.7 |     0 |        3 |   19.89
+
+*** TERMINATED at step 285 ***
+ 286 | RELEASE  |     3 |   29.8 |     0 |        3 |   20.20
+
+*** TERMINATED at step 286 ***
+ 287 | ROTATE   |     3 |   29.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 287 ***
+ 288 | GRASP    |     3 |   29.6 |     0 |        3 |   19.90
+
+*** TERMINATED at step 288 ***
+ 289 | ROTATE   |     3 |   29.5 |     0 |        3 |   19.89
+
+*** TERMINATED at step 289 ***
+ 290 | ROT_REV  |     3 |   29.4 |     0 |        3 |   20.22
+
+*** TERMINATED at step 290 ***
+ 291 | RELEASE  |    39 |   30.4 |     0 |        3 |   20.06
+
+*** TERMINATED at step 291 ***
+ 292 | HOLD     |    39 |   30.4 |     0 |        3 |   20.01
+
+*** TERMINATED at step 292 ***
+ 293 | ROTATE   |    39 |   30.4 |     0 |        3 |   20.04
+
+*** TERMINATED at step 293 ***
+ 294 | ROT_REV  |    39 |   30.1 |     0 |        3 |   20.15
+
+*** TERMINATED at step 294 ***
+ 295 | HOLD     |     3 |   29.8 |     0 |        3 |   19.58
+
+*** TERMINATED at step 295 ***
+ 296 | ROTATE   |     3 |   29.6 |     0 |        3 |   19.91
+
+*** TERMINATED at step 296 ***
+ 297 | HOLD     |     3 |   29.2 |     0 |        3 |   20.32
+
+*** TERMINATED at step 297 ***
+ 298 | ROT_REV  |     3 |   29.3 |     0 |        3 |   20.25
+
+*** TERMINATED at step 298 ***
+ 299 | ROT_REV  |     3 |   29.4 |     0 |        3 |   20.02
+
+*** TERMINATED at step 299 ***
+ 300 | RELEASE  |    39 |   31.2 |     0 |        3 |   19.93
+
+*** TERMINATED at step 300 ***
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | ROT_REV  |     0 |  -10.1 |     0 |        0 |    0.15
+  20 | RELEASE  |     0 |   -8.7 |     0 |        0 |    0.18
+  30 | GRASP    |     0 |   -4.4 |     0 |        0 |    0.11
+  40 | RELEASE  |     0 |   -2.2 |     0 |        0 |    0.31
+  50 | ROT_REV  |     0 |   -2.5 |     0 |        0 |   -0.09
+  60 | GRASP    |     0 |   -0.8 |     0 |        0 |   -0.33
+  70 | GRASP    |     1 |    6.9 |     0 |        1 |    0.02
+  80 | HOLD     |     1 |    9.5 |     0 |        1 |    0.11
+  90 | GRASP    |     1 |    8.0 |     0 |        1 |   -0.39
+ 100 | ROTATE   |     1 |    8.8 |     0 |        1 |    0.36
+ 110 | ROT_REV  |     1 |   12.9 |     0 |        1 |   -0.43
+ 120 | HOLD     |     1 |   13.8 |     0 |        1 |    0.15
+ 130 | HOLD     |     2 |   18.7 |     0 |        2 |   -0.01
+ 140 | HOLD     |     2 |   19.4 |     0 |        2 |    0.17
+ 150 | ROTATE   |     2 |   19.7 |     0 |        2 |   -0.11
+ 160 | GRASP    |     2 |   22.2 |     0 |        2 |    0.10
+ 170 | ROTATE   |     2 |   21.0 |     0 |        2 |   -0.16
+ 180 | HOLD     |     2 |   19.1 |     0 |        2 |   -0.31
+ 190 | ROT_REV  |     2 |   16.1 |     0 |        2 |    0.31
+ 200 | GRASP    |     2 |   22.6 |     0 |        2 |    0.18
+ 205 | RELEASE  |     3 |   25.1 |     0 |        3 |   20.67
+
+*** TERMINATED at step 205 ***
+ 206 | ROTATE   |     3 |   25.5 |     0 |        3 |   20.07
+
+*** TERMINATED at step 206 ***
+ 207 | HOLD     |     3 |   25.6 |     0 |        3 |   20.03
+
+*** TERMINATED at step 207 ***
+ 208 | GRASP    |     3 |   25.6 |     0 |        3 |   20.03
+
+*** TERMINATED at step 208 ***
+ 209 | HOLD     |     3 |   25.7 |     0 |        3 |   20.03
+
+*** TERMINATED at step 209 ***
+ 210 | GRASP    |     3 |   26.2 |     0 |        3 |   20.21
+
+*** TERMINATED at step 210 ***
+ 211 | HOLD     |     3 |   26.8 |     0 |        3 |   20.19
+
+*** TERMINATED at step 211 ***
+ 212 | RELEASE  |     3 |   27.1 |     0 |        3 |   20.50
+
+*** TERMINATED at step 212 ***
+ 213 | ROT_REV  |     4 | -154.3 |     1 |        0 |  -30.29
+
+*** TERMINATED at step 213 ***
+Cube dropped or other termination condition
+ 214 | RELEASE  |    39 |   72.8 |     0 |        3 |   24.30
+
+*** TERMINATED at step 214 ***
+ 215 | ROT_REV  |     0 |    0.0 |     0 |        0 |    1.83
+
+*** TERMINATED at step 215 ***
+Cube dropped or other termination condition
+ 216 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 216 ***
+Cube dropped or other termination condition
+ 217 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 217 ***
+Cube dropped or other termination condition
+ 218 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 218 ***
+Cube dropped or other termination condition
+ 219 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 219 ***
+Cube dropped or other termination condition
+ 220 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 220 ***
+Cube dropped or other termination condition
+ 221 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 221 ***
+Cube dropped or other termination condition
+ 222 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 222 ***
+Cube dropped or other termination condition
+ 223 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 223 ***
+Cube dropped or other termination condition
+ 224 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 224 ***
+Cube dropped or other termination condition
+ 225 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 225 ***
+Cube dropped or other termination condition
+ 226 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 226 ***
+Cube dropped or other termination condition
+ 227 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 227 ***
+Cube dropped or other termination condition
+ 228 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 228 ***
+Cube dropped or other termination condition
+ 229 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 229 ***
+Cube dropped or other termination condition
+ 230 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 230 ***
+Cube dropped or other termination condition
+ 231 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 231 ***
+Cube dropped or other termination condition
+ 232 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 232 ***
+Cube dropped or other termination condition
+ 233 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 233 ***
+Cube dropped or other termination condition
+ 234 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 234 ***
+Cube dropped or other termination condition
+ 235 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 235 ***
+Cube dropped or other termination condition
+ 236 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 236 ***
+Cube dropped or other termination condition
+ 237 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 237 ***
+Cube dropped or other termination condition
+ 238 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 238 ***
+Cube dropped or other termination condition
+ 239 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 239 ***
+Cube dropped or other termination condition
+ 240 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 240 ***
+Cube dropped or other termination condition
+ 241 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 241 ***
+Cube dropped or other termination condition
+ 242 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 242 ***
+Cube dropped or other termination condition
+ 243 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 243 ***
+Cube dropped or other termination condition
+ 244 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 244 ***
+Cube dropped or other termination condition
+ 245 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 245 ***
+Cube dropped or other termination condition
+ 246 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 246 ***
+Cube dropped or other termination condition
+ 247 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 247 ***
+Cube dropped or other termination condition
+ 248 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 248 ***
+Cube dropped or other termination condition
+ 249 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 249 ***
+Cube dropped or other termination condition
+ 250 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 250 ***
+Cube dropped or other termination condition
+ 251 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 251 ***
+Cube dropped or other termination condition
+ 252 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 252 ***
+Cube dropped or other termination condition
+ 253 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 253 ***
+Cube dropped or other termination condition
+ 254 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 254 ***
+Cube dropped or other termination condition
+ 255 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 255 ***
+Cube dropped or other termination condition
+ 256 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 256 ***
+Cube dropped or other termination condition
+ 257 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 257 ***
+Cube dropped or other termination condition
+ 258 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 258 ***
+Cube dropped or other termination condition
+ 259 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 259 ***
+Cube dropped or other termination condition
+ 260 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 260 ***
+Cube dropped or other termination condition
+ 261 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 261 ***
+Cube dropped or other termination condition
+ 262 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 262 ***
+Cube dropped or other termination condition
+ 263 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 263 ***
+Cube dropped or other termination condition
+ 264 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 264 ***
+Cube dropped or other termination condition
+ 265 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 265 ***
+Cube dropped or other termination condition
+ 266 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 266 ***
+Cube dropped or other termination condition
+ 267 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 267 ***
+Cube dropped or other termination condition
+ 268 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 268 ***
+Cube dropped or other termination condition
+ 269 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 269 ***
+Cube dropped or other termination condition
+ 270 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 270 ***
+Cube dropped or other termination condition
+ 271 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 271 ***
+Cube dropped or other termination condition
+ 272 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 272 ***
+Cube dropped or other termination condition
+ 273 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 273 ***
+Cube dropped or other termination condition
+ 274 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 274 ***
+Cube dropped or other termination condition
+ 275 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 275 ***
+Cube dropped or other termination condition
+ 276 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 276 ***
+Cube dropped or other termination condition
+ 277 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 277 ***
+Cube dropped or other termination condition
+ 278 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 278 ***
+Cube dropped or other termination condition
+ 279 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 279 ***
+Cube dropped or other termination condition
+ 280 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 280 ***
+Cube dropped or other termination condition
+ 281 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 281 ***
+Cube dropped or other termination condition
+ 282 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 282 ***
+Cube dropped or other termination condition
+ 283 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 283 ***
+Cube dropped or other termination condition
+ 284 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 284 ***
+Cube dropped or other termination condition
+ 285 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 285 ***
+Cube dropped or other termination condition
+ 286 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 286 ***
+Cube dropped or other termination condition
+ 287 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 287 ***
+Cube dropped or other termination condition
+ 288 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 288 ***
+Cube dropped or other termination condition
+ 289 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 289 ***
+Cube dropped or other termination condition
+ 290 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 290 ***
+Cube dropped or other termination condition
+ 291 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 291 ***
+Cube dropped or other termination condition
+ 292 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 292 ***
+Cube dropped or other termination condition
+ 293 | ROTATE   |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 293 ***
+Cube dropped or other termination condition
+ 294 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 294 ***
+Cube dropped or other termination condition
+ 295 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 295 ***
+Cube dropped or other termination condition
+ 296 | ROT_REV  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 296 ***
+Cube dropped or other termination condition
+ 297 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 297 ***
+Cube dropped or other termination condition
+ 298 | GRASP    |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 298 ***
+Cube dropped or other termination condition
+ 299 | RELEASE  |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 299 ***
+Cube dropped or other termination condition
+ 300 | HOLD     |     0 |    0.0 |     0 |        0 |   -0.40
+
+*** TERMINATED at step 300 ***
+Cube dropped or other termination condition
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | GRASP    |     0 |   -7.3 |     0 |        0 |    0.14
+  20 | GRASP    |     0 |   -5.4 |     0 |        0 |    0.33
+  30 | ROT_REV  |     0 |   -4.6 |     0 |        0 |    0.90
+  40 | GRASP    |     0 |   -7.3 |     0 |        0 |   -0.06
+  50 | GRASP    |     0 |   -6.5 |     0 |        0 |    0.81
+  60 | GRASP    |     0 |  -16.0 |     0 |        0 |   -0.02
+  70 | HOLD     |     0 |  -13.2 |     0 |        0 |   -0.19
+  80 | HOLD     |     0 |  -13.4 |     0 |        0 |   -0.14
+  90 | RELEASE  |     0 |  -12.2 |     0 |        0 |    0.30
+ 100 | RELEASE  |     0 |  -15.9 |     0 |        0 |    0.87
+ 110 | GRASP    |     0 |  -22.0 |     0 |        0 |   -0.17
+ 120 | GRASP    |     0 |  -21.6 |     0 |        0 |   -0.05
+ 130 | ROTATE   |     0 |  -21.1 |     0 |        0 |    0.03
+ 140 | ROT_REV  |     0 |  -20.0 |     0 |        0 |   -0.43
+ 150 | ROTATE   |     0 |  -18.7 |     0 |        0 |    0.34
+ 160 | ROTATE   |     0 |  -17.8 |     0 |        0 |   -0.04
+ 170 | ROTATE   |     0 |  -18.7 |     0 |        0 |    0.03
+ 180 | ROTATE   |     0 |  -20.2 |     0 |        0 |    0.48
+ 190 | ROT_REV  |     0 |  -22.5 |     0 |        0 |   -0.46
+ 200 | HOLD     |     0 |  -23.8 |     0 |        0 |    0.02
+ 210 | ROTATE   |     0 |  -22.5 |     0 |        0 |    0.06
+ 220 | ROTATE   |     0 |  -24.7 |     0 |        0 |   -0.04
+ 230 | HOLD     |     0 |  -29.2 |     0 |        0 |   -0.12
+ 240 | HOLD     |     0 |  -30.8 |     0 |        0 |    0.01
+ 250 | GRASP    |     0 |  -32.7 |     0 |        0 |   -0.56
+ 260 | ROTATE   |     0 |  -36.2 |     0 |        0 |    0.04
+ 270 | HOLD     |     0 |  -41.3 |     0 |        0 |   -0.08
+ 280 | HOLD     |     0 |  -43.3 |     0 |        0 |   -0.07
+ 290 | GRASP    |     0 |  -42.4 |     0 |        0 |    0.04
+ 300 | ROT_REV  |     4 |  -39.7 |     1 |        0 |   -0.98
+
+*** TRUNCATED at step 300 (max steps reached) ***
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | ROTATE   |     0 |  -14.9 |     0 |        0 |    1.07
+  20 | ROTATE   |     0 |  -15.4 |     0 |        0 |   -0.06
+  30 | HOLD     |     0 |  -14.0 |     0 |        0 |    0.01
+  40 | GRASP    |     0 |  -14.9 |     0 |        0 |    0.14
+  50 | ROTATE   |     0 |  -11.3 |     0 |        0 |    0.15
+  60 | ROTATE   |     0 |  -10.4 |     0 |        0 |    0.18
+  70 | RELEASE  |     0 |   -9.8 |     0 |        0 |    0.03
+  80 | HOLD     |     0 |   -9.8 |     0 |        0 |    0.03
+  90 | ROT_REV  |     0 |   -9.7 |     0 |        0 |    0.04
+ 100 | HOLD     |     0 |   -9.6 |     0 |        0 |    0.04
+ 110 | ROTATE   |     0 |   -9.5 |     0 |        0 |    0.03
+ 120 | GRASP    |     0 |   -7.4 |     0 |        0 |    0.09
+ 130 | ROTATE   |     0 |  -15.5 |     0 |        0 |    0.14
+ 140 | HOLD     |     0 |  -12.5 |     0 |        0 |   -0.01
+ 150 | ROTATE   |     0 |  -16.6 |     0 |        0 |    0.07
+ 160 | ROT_REV  |     0 |  -16.4 |     0 |        0 |    0.06
+ 170 | ROT_REV  |     0 |  -12.4 |     0 |        0 |    0.05
+ 180 | RELEASE  |     0 |  -10.0 |     0 |        0 |    0.07
+ 190 | HOLD     |     0 |  -10.0 |     0 |        0 |    0.04
+ 200 | GRASP    |     0 |   -4.7 |     0 |        0 |    0.67
+ 210 | GRASP    |     0 |   -1.9 |     0 |        0 |    0.42
+ 220 | ROTATE   |     0 |   -1.2 |     0 |        0 |   -0.08
+ 230 | RELEASE  |     0 |   -2.9 |     0 |        0 |    0.04
+ 240 | RELEASE  |     1 |    2.3 |     0 |        1 |    0.29
+ 250 | HOLD     |     1 |    7.7 |     0 |        1 |    0.22
+ 260 | ROT_REV  |     1 |    8.8 |     0 |        1 |    0.47
+ 270 | ROT_REV  |     1 |   12.2 |     0 |        1 |    0.32
+ 280 | ROTATE   |     1 |   14.8 |     0 |        1 |    0.35
+ 290 | HOLD     |     2 |   16.8 |     0 |        2 |    0.28
+ 300 | GRASP    |     2 |   20.0 |     0 |        2 |    1.08
+
+*** TRUNCATED at step 300 (max steps reached) ***
+Episode 10/2000 - Avg Reward: 104.17 - Epsilon: 0.904 - Steps: 300
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | GRASP    |     0 |   -8.3 |     0 |        0 |   -0.13
+  20 | ROTATE   |     0 |  -11.3 |     0 |        0 |    0.37
+  30 | ROT_REV  |     0 |   -7.9 |     0 |        0 |    0.03
+  40 | ROTATE   |     0 |   -5.5 |     0 |        0 |    0.10
+  50 | ROTATE   |     0 |   -5.0 |     0 |        0 |    0.04
+  60 | RELEASE  |     0 |   -3.9 |     0 |        0 |    0.03
+  70 | HOLD     |     0 |   -2.9 |     0 |        0 |    0.03
+  80 | ROT_REV  |     0 |   -2.5 |     0 |        0 |    0.13
+  90 | GRASP    |     0 |   -0.5 |     0 |        0 |    0.30
+ 100 | RELEASE  |     0 |   -2.8 |     0 |        0 |    0.04
+ 110 | GRASP    |     0 |   -2.7 |     0 |        0 |    0.03
+ 120 | HOLD     |     0 |   -1.6 |     0 |        0 |    0.02
+ 130 | ROTATE   |     0 |   -0.9 |     0 |        0 |    0.18
+ 140 | GRASP    |     1 |    1.5 |     0 |        1 |    0.15
+ 150 | GRASP    |     1 |    2.2 |     0 |        1 |    0.22
+ 160 | ROTATE   |     1 |    3.5 |     0 |        1 |   -0.01
+ 170 | ROTATE   |     1 |    2.4 |     0 |        1 |    0.03
+ 180 | HOLD     |     1 |    1.7 |     0 |        1 |    0.02
+ 190 | GRASP    |     1 |    1.6 |     0 |        1 |    0.24
+ 200 | HOLD     |     1 |    0.2 |     0 |        1 |   -0.02
+ 210 | RELEASE  |     0 |   -1.3 |     0 |        0 |    0.01
+ 220 | HOLD     |     1 |    5.8 |     0 |        1 |    0.78
+ 230 | ROT_REV  |     1 |   14.7 |     0 |        1 |    0.46
+ 240 | RELEASE  |     2 |   18.2 |     0 |        2 |    0.16
+ 250 | ROTATE   |     2 |   18.0 |     0 |        2 |    0.02
+ 260 | ROTATE   |     6 |   16.7 |     1 |        2 |   -0.88
+ 270 | GRASP    |     2 |   19.1 |     0 |        2 |    0.28
+ 280 | HOLD     |     2 |   21.3 |     0 |        2 |   -0.00
+ 290 | ROT_REV  |     2 |   20.3 |     0 |        2 |   -0.49
+ 300 | RELEASE  |     2 |   24.2 |     0 |        2 |    0.30
+
+*** TRUNCATED at step 300 (max steps reached) ***
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | ROT_REV  |     4 |  -24.3 |     1 |        0 |   -1.77
+  20 | GRASP    |     0 |  -23.0 |     0 |        0 |    0.01
+  30 | ROTATE   |     0 |  -22.5 |     0 |        0 |    0.10
+  40 | GRASP    |     0 |  -20.7 |     0 |        0 |   -0.04
+  50 | GRASP    |     0 |  -21.9 |     0 |        0 |    0.02
+  60 | ROT_REV  |     0 |  -20.6 |     0 |        0 |   -0.54
+  70 | RELEASE  |     0 |  -21.7 |     0 |        0 |   -0.13
+  80 | ROT_REV  |     0 |  -22.7 |     0 |        0 |    0.03
+  90 | HOLD     |     0 |  -23.4 |     0 |        0 |    0.07
+ 100 | GRASP    |     0 |  -23.2 |     0 |        0 |    0.10
+ 110 | ROT_REV  |     0 |  -22.9 |     0 |        0 |    0.03
+ 120 | GRASP    |     0 |  -22.4 |     0 |        0 |    0.11
+ 130 | RELEASE  |     0 |  -24.4 |     0 |        0 |    0.02
+ 140 | ROTATE   |     0 |  -24.2 |     0 |        0 |    0.19
+ 150 | HOLD     |     0 |  -18.8 |     0 |        0 |    0.21
+ 160 | GRASP    |     0 |  -18.8 |     0 |        0 |    0.06
+ 170 | GRASP    |     0 |  -18.6 |     0 |        0 |    0.04
+ 180 | ROT_REV  |     0 |  -15.0 |     0 |        0 |    0.06
+ 190 | RELEASE  |     0 |   -8.3 |     0 |        0 |    0.67
+ 200 | HOLD     |     0 |   -8.7 |     0 |        0 |   -0.00
+ 210 | GRASP    |     0 |  -10.2 |     0 |        0 |   -0.09
+ 220 | ROTATE   |     0 |   -8.3 |     0 |        0 |    0.92
+ 230 | GRASP    |     0 |   -9.6 |     0 |        0 |    0.03
+ 240 | ROTATE   |     0 |  -12.1 |     0 |        0 |   -0.09
+ 250 | ROTATE   |     0 |  -13.7 |     0 |        0 |    0.02
+ 260 | ROTATE   |     8 |  -19.9 |     2 |        0 |   -7.67
+ 270 | HOLD     |     0 |  -24.3 |     0 |        0 |   -0.09
+ 280 | HOLD     |     0 |  -26.6 |     0 |        0 |    0.02
+ 290 | ROT_REV  |     0 |  -30.5 |     0 |        0 |    0.02
+ 300 | GRASP    |     0 |  -30.5 |     0 |        0 |    0.02
+
+*** TRUNCATED at step 300 (max steps reached) ***
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | RELEASE  |     0 |  -55.9 |     0 |        0 |    0.00
+  20 | ROTATE   |     0 |  -54.3 |     0 |        0 |    0.14
+  30 | GRASP    |     0 |  -51.9 |     0 |        0 |   -0.11
+  40 | HOLD     |     4 |  -43.5 |     1 |        0 |   -1.88
+  50 | ROT_REV  |     0 |  -44.4 |     0 |        0 |    0.03
+  60 | ROT_REV  |     0 |  -43.2 |     0 |        0 |    0.28
+  70 | ROT_REV  |     0 |  -42.2 |     0 |        0 |    0.08
+  80 | ROT_REV  |     0 |  -41.3 |     0 |        0 |    0.10
+  90 | ROTATE   |     0 |  -41.3 |     0 |        0 |    0.19
+ 100 | ROT_REV  |     0 |  -41.2 |     0 |        0 |    0.07
+ 110 | RELEASE  |     0 |  -41.7 |     0 |        0 |   -0.05
+ 120 | GRASP    |     0 |  -41.2 |     0 |        0 |    0.03
+ 130 | HOLD     |     0 |  -41.3 |     0 |        0 |   -0.01
+ 140 | ROTATE   |     0 |  -41.2 |     0 |        0 |   -0.00
+ 150 | ROTATE   |     0 |  -41.2 |     0 |        0 |    0.26
+ 160 | ROT_REV  |     0 |  -41.2 |     0 |        0 |   -0.08
+ 170 | HOLD     |     0 |  -41.5 |     0 |        0 |    0.03
+ 180 | HOLD     |     0 |  -41.3 |     0 |        0 |   -0.05
+ 190 | ROT_REV  |     0 |  -41.8 |     0 |        0 |    0.05
+ 200 | GRASP    |     0 |  -41.5 |     0 |        0 |    0.01
+ 210 | ROT_REV  |     0 |  -41.5 |     0 |        0 |    0.01
+ 220 | RELEASE  |     0 |  -41.5 |     0 |        0 |   -0.04
+ 230 | GRASP    |     0 |  -41.2 |     0 |        0 |   -0.09
+ 240 | RELEASE  |     0 |  -41.6 |     0 |        0 |   -0.05
+ 250 | ROT_REV  |     0 |  -41.2 |     0 |        0 |    0.00
+ 260 | ROT_REV  |     0 |  -41.1 |     0 |        0 |   -0.05
+ 270 | RELEASE  |     0 |  -40.9 |     0 |        0 |   -0.04
+ 280 | GRASP    |     0 |  -41.6 |     0 |        0 |    0.03
+ 290 | RELEASE  |     0 |  -41.6 |     0 |        0 |    0.03
+ 300 | RELEASE  |     0 |  -41.6 |     0 |        0 |    0.02
+
+*** TRUNCATED at step 300 (max steps reached) ***
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | RELEASE  |     4 |   -8.5 |     1 |        0 |    1.67
+  20 | RELEASE  |     0 |   -5.6 |     0 |        0 |    0.07
+  30 | ROTATE   |     0 |   -5.7 |     0 |        0 |    0.71
+  40 | RELEASE  |     1 |    0.1 |     0 |        1 |    0.04
+  50 | RELEASE  |     1 |    0.7 |     0 |        1 |    0.05
+  60 | GRASP    |     1 |    0.8 |     0 |        1 |    0.04
+  70 | RELEASE  |     1 |    1.7 |     0 |        1 |    0.05
+  80 | HOLD     |     1 |    2.0 |     0 |        1 |    0.05
+  90 | ROT_REV  |     1 |    2.2 |     0 |        1 |    0.05
+ 100 | HOLD     |     1 |    2.4 |     0 |        1 |    0.02
+ 110 | RELEASE  |     1 |    2.5 |     0 |        1 |    0.02
+ 120 | RELEASE  |     1 |    2.5 |     0 |        1 |    0.04
+ 130 | RELEASE  |     1 |    2.5 |     0 |        1 |    0.01
+ 140 | ROTATE   |     1 |    2.5 |     0 |        1 |    0.04
+ 150 | RELEASE  |     1 |    2.8 |     0 |        1 |    0.04
+ 160 | ROT_REV  |     1 |    4.0 |     0 |        1 |    0.08
+ 170 | GRASP    |     1 |    4.6 |     0 |        1 |    0.08
+ 180 | ROT_REV  |     1 |    6.4 |     0 |        1 |    0.15
+ 190 | RELEASE  |     1 |   12.7 |     0 |        1 |    0.13
+ 200 | ROT_REV  |     1 |   14.6 |     0 |        1 |    0.03
+ 210 | RELEASE  |     2 |   22.7 |     0 |        2 |    0.03
+ 217 | RELEASE  |     3 |   25.1 |     0 |        3 |   20.07
+
+*** TERMINATED at step 217 ***
+ 218 | ROTATE   |     3 |   25.1 |     0 |        3 |   20.04
+
+*** TERMINATED at step 218 ***
+ 219 | RELEASE  |     3 |   25.1 |     0 |        3 |   20.03
+
+*** TERMINATED at step 219 ***
+ 220 | ROTATE   |     3 |   25.1 |     0 |        3 |   20.02
+
+*** TERMINATED at step 220 ***
+ 221 | GRASP    |     3 |   25.1 |     0 |        3 |   20.03
+
+*** TERMINATED at step 221 ***
+ 222 | ROTATE   |     3 |   25.3 |     0 |        3 |   20.14
+
+*** TERMINATED at step 222 ***
+ 223 | ROTATE   |     3 |   26.0 |     0 |        3 |   20.27
+
+*** TERMINATED at step 223 ***
+ 224 | RELEASE  |     3 |   26.4 |     0 |        3 |   20.09
+
+*** TERMINATED at step 224 ***
+ 225 | ROT_REV  |     3 |   26.4 |     0 |        3 |   20.04
+
+*** TERMINATED at step 225 ***
+ 226 | RELEASE  |     3 |   26.4 |     0 |        3 |   20.01
+
+*** TERMINATED at step 226 ***
+ 227 | GRASP    |     3 |   26.4 |     0 |        3 |   20.04
+
+*** TERMINATED at step 227 ***
+ 228 | ROT_REV  |     3 |   26.4 |     0 |        3 |   20.05
+
+*** TERMINATED at step 228 ***
+ 229 | ROT_REV  |     3 |   26.7 |     0 |        3 |   20.18
+
+*** TERMINATED at step 229 ***
+ 230 | ROT_REV  |     3 |   27.4 |     0 |        3 |   20.28
+
+*** TERMINATED at step 230 ***
+ 231 | RELEASE  |     3 |   27.8 |     0 |        3 |   20.13
+
+*** TERMINATED at step 231 ***
+ 232 | RELEASE  |     3 |   27.8 |     0 |        3 |   20.04
+
+*** TERMINATED at step 232 ***
+ 233 | HOLD     |     3 |   27.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 233 ***
+ 234 | RELEASE  |     3 |   27.8 |     0 |        3 |   20.04
+
+*** TERMINATED at step 234 ***
+ 235 | GRASP    |     3 |   27.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 235 ***
+ 236 | ROTATE   |     3 |   27.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 236 ***
+ 237 | RELEASE  |     3 |   27.8 |     0 |        3 |   20.01
+
+*** TERMINATED at step 237 ***
+ 238 | GRASP    |     3 |   27.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 238 ***
+ 239 | RELEASE  |     3 |   27.8 |     0 |        3 |   20.04
+
+*** TERMINATED at step 239 ***
+ 240 | HOLD     |     3 |   27.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 240 ***
+ 241 | ROTATE   |     3 |   27.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 241 ***
+ 242 | ROT_REV  |     3 |   27.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 242 ***
+ 243 | HOLD     |     3 |   27.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 243 ***
+ 244 | GRASP    |     3 |   27.8 |     0 |        3 |   20.01
+
+*** TERMINATED at step 244 ***
+ 245 | HOLD     |     3 |   27.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 245 ***
+ 246 | ROTATE   |     3 |   27.8 |     0 |        3 |   20.01
+
+*** TERMINATED at step 246 ***
+ 247 | GRASP    |     3 |   28.1 |     0 |        3 |   20.24
+
+*** TERMINATED at step 247 ***
+ 248 | HOLD     |     3 |   28.7 |     0 |        3 |   19.93
+
+*** TERMINATED at step 248 ***
+ 249 | HOLD     |     3 |   28.8 |     0 |        3 |   20.20
+
+*** TERMINATED at step 249 ***
+ 250 | ROT_REV  |     3 |   29.3 |     0 |        3 |   20.20
+
+*** TERMINATED at step 250 ***
+ 251 | HOLD     |     3 |   29.7 |     0 |        3 |   20.11
+
+*** TERMINATED at step 251 ***
+ 252 | RELEASE  |     3 |   29.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 252 ***
+ 253 | RELEASE  |     3 |   29.8 |     0 |        3 |   20.04
+
+*** TERMINATED at step 253 ***
+ 254 | ROTATE   |     3 |   29.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 254 ***
+ 255 | HOLD     |     3 |   29.8 |     0 |        3 |   20.00
+
+*** TERMINATED at step 255 ***
+ 256 | GRASP    |     3 |   29.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 256 ***
+ 257 | RELEASE  |     3 |   29.8 |     0 |        3 |   20.04
+
+*** TERMINATED at step 257 ***
+ 258 | ROTATE   |     3 |   29.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 258 ***
+ 259 | ROT_REV  |     3 |   29.8 |     0 |        3 |   20.02
+
+*** TERMINATED at step 259 ***
+ 260 | HOLD     |     3 |   29.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 260 ***
+ 261 | ROT_REV  |     3 |   29.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 261 ***
+ 262 | RELEASE  |     3 |   29.8 |     0 |        3 |   20.01
+
+*** TERMINATED at step 262 ***
+ 263 | HOLD     |     3 |   29.8 |     0 |        3 |   20.01
+
+*** TERMINATED at step 263 ***
+ 264 | GRASP    |     3 |   29.8 |     0 |        3 |   20.03
+
+*** TERMINATED at step 264 ***
+ 265 | ROT_REV  |     3 |   29.9 |     0 |        3 |   20.12
+
+*** TERMINATED at step 265 ***
+ 266 | GRASP    |    39 |   30.8 |     0 |        3 |   19.62
+
+*** TERMINATED at step 266 ***
+ 267 | HOLD     |    39 |   31.5 |     0 |        3 |   20.44
+
+*** TERMINATED at step 267 ***
+ 268 | RELEASE  |    39 |   32.0 |     0 |        3 |   19.95
+
+*** TERMINATED at step 268 ***
+ 269 | ROT_REV  |    39 |   32.0 |     0 |        3 |   20.01
+
+*** TERMINATED at step 269 ***
+ 270 | HOLD     |    39 |   32.0 |     0 |        3 |   20.03
+
+*** TERMINATED at step 270 ***
+ 271 | HOLD     |    39 |   32.0 |     0 |        3 |   20.04
+
+*** TERMINATED at step 271 ***
+ 272 | HOLD     |    39 |   32.0 |     0 |        3 |   20.03
+
+*** TERMINATED at step 272 ***
+ 273 | ROT_REV  |    39 |   32.0 |     0 |        3 |   20.00
+
+*** TERMINATED at step 273 ***
+ 274 | ROTATE   |    39 |   32.2 |     0 |        3 |   19.88
+
+*** TERMINATED at step 274 ***
+ 275 | ROT_REV  |    39 |   32.9 |     0 |        3 |   19.74
+
+*** TERMINATED at step 275 ***
+ 276 | HOLD     |    39 |   33.2 |     0 |        3 |   20.44
+
+*** TERMINATED at step 276 ***
+ 277 | HOLD     |    39 |   33.5 |     0 |        3 |   20.08
+
+*** TERMINATED at step 277 ***
+ 278 | HOLD     |    39 |   33.5 |     0 |        3 |   19.74
+
+*** TERMINATED at step 278 ***
+ 279 | HOLD     |    39 |   33.7 |     0 |        3 |   19.54
+
+*** TERMINATED at step 279 ***
+ 280 | ROT_REV  |    39 |   34.1 |     0 |        3 |   19.82
+
+*** TERMINATED at step 280 ***
+ 281 | HOLD     |    39 |   34.4 |     0 |        3 |   20.16
+
+*** TERMINATED at step 281 ***
+ 290 | HOLD     |    43 |   36.1 |     1 |        3 |   -1.08
+ 300 | HOLD     |    39 |   36.1 |     0 |        3 |   -0.00
+
+*** TRUNCATED at step 300 (max steps reached) ***
+
+----------------------------------------------------------------------
+Step | Action   | State | Z-Rot  | Speed | Progress | Reward
+----------------------------------------------------------------------
+  10 | HOLD     |     4 |  -13.9 |     1 |        0 |    3.09
+  20 | RELEASE  |     0 |  -12.9 |     0 |        0 |    0.04
+  30 | RELEASE  |     0 |  -12.4 |     0 |        0 |    0.04
+  40 | ROT_REV  |     0 |  -11.6 |     0 |        0 |   -0.27
+  50 | GRASP    |     0 |  -10.2 |     0 |        0 |    0.04
+  60 | ROT_REV  |     0 |  -11.9 |     0 |        0 |   -0.37
