@@ -1,88 +1,102 @@
-# inhand_train.py (Student Skeleton)
+# inhand_train.py - Training loop for Q-Learning cube rotation
 import os
 import numpy as np
-import time
-from inhand_env import CanRotateEnv 
-from Translator import ActionTranslator, ObsTranslator
+from inhand_env import CanRotateEnv
+from MinimalTranslator import MinimalTranslator
+from RLagent import QLearningAgent
 
-
-# --- TODO: Import your agent class ---
-# from agent import MyRLAgent  # e.g., PPOAgent
-
-# Create a directory to save logs and models
-log_dir = "my_agent_logs/"
+# Create output directory
+log_dir = "training_output/"
 os.makedirs(log_dir, exist_ok=True)
 
 # --- Configuration ---
-TOTAL_TIMESTEPS = 8_000_000
-STEPS_PER_COLLECT = 2048  # How many steps to run per "collect" phase
-LEARNING_RATE = 3e-4
-DEVICE = 'cpu' # 'cuda' or 'cpu'
+NUM_EPISODES = 2000
+MAX_STEPS = 300
+CHECKPOINT_INTERVAL = 500
 
-# --- TODO: Initialize the Environment ---
-env = CanRotateEnv(render_mode="headless")
-print(f"Observation space: {env.observation_space.shape}")
-print(f"Action space: {env.action_space.shape}")
+# --- Initialize Environment ---
+print("Initializing environment...")
+base_env = CanRotateEnv(render_mode="headless")
+env = MinimalTranslator(base_env)
 
-# --- TODO: Initialize your Agent ---
-agent = MyRLAgent(
-     obs_space_shape=env.observation_space.shape,
-     action_space_shape=env.action_space.shape,
-     learning_rate=LEARNING_RATE,
-     device=DEVICE
- )
-agent.load_model("my_agent.pth") # Optional: to continue training
+# --- Initialize Agent ---
+print("Initializing Q-Learning agent...")
+agent = QLearningAgent(
+    num_states=18,       # 3 speed x 6 progress
+    num_actions=8,       # HOLD, THUMB x2, FINGER3 x3, FINGER2 x2
+    learning_rate=0.1,
+    discount=0.99,
+    epsilon=0.8,
+    epsilon_decay=0.997,
+    min_epsilon=0.05
+)
 
-print("Starting training...")
+# Optional: load existing Q-table to continue training
+# agent.load("training_output/q_table_final.npy")
 
-# --- TODO: Write the main training loop ---
-# This is just one example of an on-policy (like PPO) training loop.
-# An off-policy loop (like DDPG/SAC) would look different.
+print(f"\nStarting training for {NUM_EPISODES} episodes...")
+print(f"State space: {agent.num_states} states")
+print(f"Action space: {agent.num_actions} actions")
+print(f"  0: HOLD")
+print(f"  1: THUMB_PUSH")
+print(f"  2: THUMB_RETRACT")
+print(f"  3: FINGER3_CURL")
+print(f"  4: FINGER3_NUDGE")
+print(f"  5: FINGER3_RETRACT")
+print(f"  6: FINGER2_PUSH")
+print(f"  7: FINGER2_RETRACT")
 
-obs, info = env.reset()
-global_step = 0
+# --- Training Loop ---
+reward_history = []
 
-while global_step < TOTAL_TIMESTEPS:
-    
-    # --- 1. Collect a batch of experiences ---
-    # (You will need to create lists or buffers to store these)
-    # trajectory_buffer = [] 
-    
-    
-    for _ in range(STEPS_PER_COLLECT):
-        # --- TODO: Get an action from your agent's policy ---
-        # action, log_prob, value = agent.get_action_and_value(obs)
-        action = ActionTranslator.action_space.sample() 
-        
-        # --- TODO: Step the environment ---
-        next_obs, reward, terminated, truncated, info = env.step(action)
-        
-        # --- TODO: Store the transition in your buffer ---
-        # e.g., trajectory_buffer.append( (obs, action, log_prob, reward, terminated, value) )
+for episode in range(NUM_EPISODES):
+    # Reset environment
+    obs, _ = env.reset()
+    state, z_rot, goal_progress = agent.get_state(env)
 
-        global_step += 1
-        obs = next_obs
-        
-        # Handle episode end
-        if terminated or truncated:
-            print(f"Episode finished at step {global_step}.")
-            obs, info = env.reset()
+    total_reward = 0.0
+    step = 0
 
-    # --- 2. Update the agent's policy ---
-    # (This is where you'd calculate advantages, PPO clip loss, etc.)
-    print("Updating policy...")
-    # --- TODO: Call your agent's update/learn function ---
-    # agent.learn(trajectory_buffer)
+    while step < MAX_STEPS:
+        # Get action from agent
+        action = agent.get_action(state)
 
-    # --- 3. Save the model periodically ---
-    if global_step % 50000 == 0:
-        save_path = f"my_agent_logs/model_step_{global_step}.pth"
-        # --- TODO: Implement your agent's save method ---
-        # agent.save_model(save_path)
-        print(f"Model saved to {save_path}")
+        # Step environment
+        next_obs, reward, terminated, truncated, _ = env.step(action)
+        next_state, z_rot, goal_progress = agent.get_state(env)
 
+        # Learn from transition
+        done = terminated or truncated
+        agent.learn(state, action, reward, next_state, done)
 
-# --- TODO: Final save and cleanup ---
-# agent.save_model("my_agent_final.pth")
+        total_reward += reward
+        step += 1
+        state = next_state
+
+        if done:
+            break
+
+    # End of episode
+    reward_history.append(total_reward)
+    agent.decay_epsilon()
+
+    # Logging every 50 episodes
+    if (episode + 1) % 50 == 0:
+        avg_reward = np.mean(reward_history[-50:])
+        print(f"Episode {episode+1:4d}/{NUM_EPISODES} | "
+              f"Avg Reward: {avg_reward:7.2f} | "
+              f"Epsilon: {agent.epsilon:.3f} | "
+              f"Final Z: {z_rot:6.1f}°")
+
+    # Checkpoint saves
+    if (episode + 1) % CHECKPOINT_INTERVAL == 0:
+        checkpoint_path = f"{log_dir}q_table_checkpoint_{episode+1}.npy"
+        agent.save(checkpoint_path)
+
+# --- Save final model ---
+agent.save(f"{log_dir}q_table_final.npy")
+
+# --- Cleanup ---
 env.close()
-print("Training finished.")
+print("\nTraining complete!")
+print(f"Final Q-table saved to {log_dir}q_table_final.npy")
