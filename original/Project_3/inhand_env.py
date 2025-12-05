@@ -5,6 +5,7 @@ import mujoco
 import mujoco.viewer as mjv
 import gymnasium as gym
 from gymnasium import spaces
+from scipy.spatial.transform import Rotation as R
 
 from simulation import Simulation
 
@@ -36,9 +37,9 @@ class CanRotateEnv(gym.Env):
         }
         
         # Define action and observation spaces
-        self.action_space = spaces.Box(low=-0.03, high=0.03, shape=(16,), dtype=np.float32)
+        self.action_space = spaces.Discrete(5)
         obs_size = len(self.sim.hand_joint_ids) + 7
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32)
+# TODO        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32)
 
         self.render_mode = render_mode
         if render_mode == 'human':
@@ -46,6 +47,42 @@ class CanRotateEnv(gym.Env):
         else:
             self.viewer = None
         self.step_count = 0
+
+    def get_object_z_rotation(self):
+        """
+        Calculates the Z-axis rotation of an object from its quaternion.
+        """
+        # Get the quaternion (w, x, y, z) from MuJoCo data
+        quat_wxyz = self.sim.data.xquat[self.obj_body_id]
+        
+        # Scipy's Rotation object expects (x, y, z, w)
+        quat_xyzw = [quat_wxyz[1], quat_wxyz[2], quat_wxyz[3], quat_wxyz[0]]
+        
+        # Create a Rotation object
+        r = R.from_quat(quat_xyzw)
+        
+        # Convert to Euler angles (xyz order) in degrees
+        euler_angles_deg = r.as_euler('xyz', degrees=True)
+        
+        # Return the Z-axis rotation
+        return euler_angles_deg[2]
+
+    def print_object_status(self):
+        """Prints the object's current position and Z rotation."""
+        
+        # We must call mj_forward() to ensure all physics-derived
+        # values (like xpos and xquat) are up-to-date.
+        mujoco.mj_forward(self.sim.model, self.sim.data)
+                
+        # Get object position
+        obj_pos = self.sim.data.xpos[self.obj_body_id]
+        
+        # Get object Z rotation
+        obj_z_rot = self.get_object_z_rotation()
+        
+        # Print to console
+        print(f"  > Object Position (x, y, z):  ({obj_pos[0]:.4f}, {obj_pos[1]:.4f}, {obj_pos[2]:.4f})")
+        print(f"  > Object Z Rotation (degrees): {obj_z_rot:.2f}°")
 
     def _get_obs(self):
         finger_qpos = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) #

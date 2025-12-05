@@ -3,6 +3,9 @@ import os
 import numpy as np
 import time
 from inhand_env import CanRotateEnv 
+from Translator import ActionTranslator, ObsTranslator
+
+
 # --- TODO: Import your agent class ---
 # from agent import MyRLAgent  # e.g., PPOAgent
 
@@ -22,13 +25,13 @@ print(f"Observation space: {env.observation_space.shape}")
 print(f"Action space: {env.action_space.shape}")
 
 # --- TODO: Initialize your Agent ---
-# agent = MyRLAgent(
-#     obs_space_shape=env.observation_space.shape,
-#     action_space_shape=env.action_space.shape,
-#     learning_rate=LEARNING_RATE,
-#     device=DEVICE
-# )
-# agent.load_model("my_agent.pth") # Optional: to continue training
+agent = MyRLAgent(
+     obs_space_shape=env.observation_space.shape,
+     action_space_shape=env.action_space.shape,
+     learning_rate=LEARNING_RATE,
+     device=DEVICE
+ )
+agent.load_model("my_agent.pth") # Optional: to continue training
 
 print("Starting training...")
 
@@ -45,12 +48,11 @@ while global_step < TOTAL_TIMESTEPS:
     # (You will need to create lists or buffers to store these)
     # trajectory_buffer = [] 
     
-    print(f"Collecting trajectory... (Step {global_step}/{TOTAL_TIMESTEPS})")
     
     for _ in range(STEPS_PER_COLLECT):
         # --- TODO: Get an action from your agent's policy ---
         # action, log_prob, value = agent.get_action_and_value(obs)
-        action = env.action_space.sample() # Placeholder: Replace with your agent's action
+        action = ActionTranslator.action_space.sample() 
         
         # --- TODO: Step the environment ---
         next_obs, reward, terminated, truncated, info = env.step(action)

@@ -84,62 +84,83 @@ class CanRotateEnv(gym.Env):
         TARGET_ROTATION = self.target_rotation
         TARGET_TOLERANCE = self.target_tolerance
 
-        #print(f"target rotation: {TARGET_ROTATION}")
-        #print(f"target tolerance: {TARGET_TOLERANCE}")
-
         obj_vel = np.zeros(6)
         mujoco.mj_objectVelocity(self.sim.model, self.sim.data, mujoco.mjtObj.mjOBJ_BODY, self.obj_body_id, obj_vel, 0)
         angular_velocity_z = obj_vel[2]
 
-        #print(f"angular velocity: {angular_velocity_z}")
-
         current_distance = abs(TARGET_ROTATION - cube_rotation_new)
+        goal_distance = abs(self.rotation_goal_delta)  # Total rotation needed (e.g., 45°, 60°, 90°)
 
-        #print(f"current distance: {np.rad2deg(current_distance)}")
+        # === CHANGE 1: Percentage-based progress with exponential scaling ===
+        progress_pct = 1.0 - (current_distance / goal_distance) if goal_distance > 0 else 1.0
+        progress_pct = max(0.0, min(1.0, progress_pct))  # Clamp to [0, 1]
 
-        # Progress reward (distance-based)
+        # Exponential scaling: reward increases significantly as we get closer
+        # At 50% progress: multiplier ~1.5, at 90%: multiplier ~2.6
+        progress_multiplier = 1.0 + (progress_pct ** 2) * 2.0
+
         if cube_rotation_prev is not None:
             previous_distance = abs(TARGET_ROTATION - cube_rotation_prev)
-            progress_reward = (previous_distance - current_distance) * 80.0
+            progress_reward = (previous_distance - current_distance) * 100.0 * progress_multiplier
         else:
             progress_reward = 0.0
 
-        # Near target bonus
-        nearTarget_bonus = 100.0 if current_distance < TARGET_TOLERANCE else 0.0
-
-        # Near target velocity penalty
-        nearTarget_velocity_penalty = abs(angular_velocity_z) * 0.5 if current_distance < np.deg2rad(15) else 0.0
-
-        # Direction-aware rotation reward (FIXED)
-        direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
-
-        #print(f"direction to target: {direction_to_target}")
+        # === CHANGE 2: Milestone bonuses (curriculum-friendly) ===
+        milestone_bonus = 0.0
+        milestones = [0.25, 0.50, 0.75, 0.90]  # 25%, 50%, 75%, 90% of goal
+        milestone_values = [15.0, 35.0, 60.0, 100.0]  # Increasing rewards
 
         if cube_rotation_prev is not None:
-            rotation_change = cube_rotation_new - cube_rotation_prev  # 
-            rotation_reward = direction_to_target * rotation_change * 60.0
+            prev_pct = 1.0 - (abs(TARGET_ROTATION - cube_rotation_prev) / goal_distance) if goal_distance > 0 else 1.0
+            prev_pct = max(0.0, min(1.0, prev_pct))
+            for threshold, bonus in zip(milestones, milestone_values):
+                # Award bonus when crossing a milestone threshold
+                if prev_pct < threshold <= progress_pct:
+                    milestone_bonus += bonus
 
-            # Wrong direction penalty (FIXED)
+        # === CHANGE 3: Scaled completion bonus ===
+        if current_distance < TARGET_TOLERANCE:
+            # Base 150 + up to 150 more for hitting it precisely
+            precision_bonus = (1.0 - current_distance / TARGET_TOLERANCE) * 150.0
+            nearTarget_bonus = 150.0 + precision_bonus
+        else:
+            nearTarget_bonus = 0.0
+
+        # Near target velocity penalty (only when very close)
+        nearTarget_velocity_penalty = abs(angular_velocity_z) * 0.3 if current_distance < np.deg2rad(10) else 0.0
+
+        # Direction-aware rotation reward
+        direction_to_target = np.sign(TARGET_ROTATION - cube_rotation_new)
+
+        if cube_rotation_prev is not None:
+            rotation_change = cube_rotation_new - cube_rotation_prev
+            # Increased base rotation reward
+            rotation_reward = direction_to_target * rotation_change * 80.0
+
+            # Wrong direction penalty (stronger)
             moving_wrong_way = (direction_to_target > 0 and rotation_change < 0) or \
-                                (direction_to_target < 0 and rotation_change > 0)
-            drift_penalty = abs(rotation_change) * 50.0 if moving_wrong_way else 0.0
+                              (direction_to_target < 0 and rotation_change > 0)
+            drift_penalty = abs(rotation_change) * 70.0 if moving_wrong_way else 0.0
         else:
             rotation_reward = 0.0
             drift_penalty = 0.0
 
-        
-        # Survival reward
+        # === CHANGE 4: Stagnation penalty ===
+        stagnation_penalty = 0.0
+        if cube_rotation_prev is not None:
+            rotation_change_abs = abs(cube_rotation_new - cube_rotation_prev)
+            # If barely moving AND far from goal, penalize
+            if rotation_change_abs < np.deg2rad(0.3) and progress_pct < 0.80:
+                # Stronger penalty when further from goal
+                stagnation_penalty = 1.0 * (1.0 - progress_pct)
+
+        # Survival reward (reduced - don't over-reward just staying in place)
         can_pos = self.sim.data.xpos[self.obj_body_id]
         palm_pos = self.sim.data.site_xpos[self.site_id]
         distance_from_palm = np.linalg.norm(can_pos - palm_pos)
-        survival_reward = 0.02 - distance_from_palm
+        survival_reward = 0.01 - (distance_from_palm * 0.5)  # Reduced
 
-        #print(f"cube position: {can_pos}")
-        #print(f"distance from palm: {distance_from_palm}")
-
-
-
-        # Contact reward (unchanged)
+        # Contact reward (slightly reduced to not dominate)
         contact_reward = 0.0
         fingers_in_contact = set()
         for i in range(self.sim.data.ncon):
@@ -150,19 +171,15 @@ class CanRotateEnv(gym.Env):
             elif geom2 in self.fingertip_geom_ids and geom1 in self.can_geom_ids:
                 fingers_in_contact.add(geom2)
 
-       # print(f"fingers_in_contact: {fingers_in_contact}")
-
-
         if len(fingers_in_contact) >= 3:
-            contact_reward = 0.4
+            contact_reward = 0.3
         elif len(fingers_in_contact) > 0:
-            contact_reward = 0.1 * len(fingers_in_contact)
+            contact_reward = 0.08 * len(fingers_in_contact)
 
-        
-
-        total_reward = progress_reward + nearTarget_bonus + rotation_reward + survival_reward + contact_reward - nearTarget_velocity_penalty - drift_penalty
-        
-        #print(f"total _reward: {total_reward}")
+        # === Total reward calculation ===
+        total_reward = (progress_reward + milestone_bonus + nearTarget_bonus +
+                       rotation_reward + survival_reward + contact_reward -
+                       nearTarget_velocity_penalty - drift_penalty - stagnation_penalty)
 
         return total_reward
 

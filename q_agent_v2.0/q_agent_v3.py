@@ -1,9 +1,6 @@
 """
-Q-Learning V2.1 for cube rotation with FINER progress bins
-- 54 states (3 grasp x 3 speed x 6 progress)
-- 6 progress bins for finer granularity (was 4)
-- Relative progress bins that scale to any goal (45, 60, 90, etc.)
-- Curriculum learning: start small, increase goal progressively
+Based off of orginal code
+
 """
 import sys
 import os
@@ -13,86 +10,106 @@ from scipy.spatial.transform import Rotation
 from discrete_translator import ActionTranslator
 from inhand_env import CanRotateEnv
 
+# Import the simulation class from the provided file
+from simulation import Simulation #
 
-def state_translator(observation, env):
-    """
-    Convert continuous observation to discrete state ID.
-    Uses RELATIVE progress bins that scale to any goal size.
-    V2.1: Increased to 6 progress bins for finer control.
-    """
-    base_env = env.unwrapped
 
-    # Get current Z rotation from quaternion
-    cube_quat_mujoco = observation[-4:]  # MuJoCo format: [w, x, y, z]
-    cube_quat_scipy = np.array([
-        cube_quat_mujoco[1], cube_quat_mujoco[2],
-        cube_quat_mujoco[3], cube_quat_mujoco[0]
-    ])  # SciPy format: [x, y, z, w]
-    r = Rotation.from_quat(cube_quat_scipy)
-    z_rotation = r.as_euler('xyz')[2]
+def print_object_status(sim, obj_body_id):
+    """Prints the object's current position and Z rotation."""
+    
+    # We must call mj_forward() to ensure all physics-derived
+    # values (like xpos and xquat) are up-to-date.
+    mujoco.mj_forward(sim.model, sim.data)
+            
+    # Get object position
+    obj_pos = sim.data.xpos[obj_body_id]
+    
+    # Get object Z rotation
+    obj_z_rot = get_object_z_rotation(sim, obj_body_id)
+    
+    # Print to console
+    print(f"  > Object Position (x, y, z):  ({obj_pos[0]:.4f}, {obj_pos[1]:.4f}, {obj_pos[2]:.4f})")
+    print(f"  > Object Z Rotation (degrees): {obj_z_rot:.2f}°")
 
-    # Goal progress (how far from target)
-    goal = base_env.target_rotation
-    goal_progress = abs(goal - z_rotation)
-    goal_abs = abs(base_env.rotation_goal_delta)  # Use delta, not absolute target
+class q_agent:
 
-    # RELATIVE progress bins - 6 bins for finer control
-    if goal_abs > 0:
-        progress_ratio = goal_progress / goal_abs
-    else:
-        progress_ratio = 0
+    def state_translator(observation, env):
+        """
+        Convert continuous observation to discrete state ID.
+        Uses RELATIVE progress bins that scale to any goal size.
+        V2.1: Increased to 6 progress bins for finer control.
+        """
+        base_env = env.unwrapped
 
-    # 6 progress bins (was 4) - more granular for better learning
-    if progress_ratio > 0.80:
-        progress_bin = 0  # very far (>80% remaining)
-    elif progress_ratio > 0.60:
-        progress_bin = 1  # far (60-80% remaining)
-    elif progress_ratio > 0.40:
-        progress_bin = 2  # medium (40-60% remaining)
-    elif progress_ratio > 0.20:
-        progress_bin = 3  # close (20-40% remaining)
-    elif progress_ratio > 0.10:
-        progress_bin = 4  # very close (10-20% remaining)
-    else:
-        progress_bin = 5  # at goal (<10% remaining)
 
-    # Grasp strength bin (finger contact)
-    fingers_in_contact = set()
-    for i in range(base_env.sim.data.ncon):
-        contact = base_env.sim.data.contact[i]
-        geom1, geom2 = contact.geom1, contact.geom2
-        if geom1 in base_env.fingertip_geom_ids and geom2 in base_env.can_geom_ids:
-            fingers_in_contact.add(geom1)
-        elif geom2 in base_env.fingertip_geom_ids and geom1 in base_env.can_geom_ids:
-            fingers_in_contact.add(geom2)
+        # Get current Z rotation from sim data
+        z_rot = get_object_z_rotation(CanRotateEnv.sim, obj_body_id)
+        z_rot_rad = np.deg2rad(z_rot)
 
-    num_fingers = len(fingers_in_contact)
-    if num_fingers <= 1:
-        grasp_bin = 0  # weak
-    elif num_fingers == 2:
-        grasp_bin = 1  # stable
-    else:
-        grasp_bin = 2  # strong
 
-    # Speed bin (angular velocity)
-    obj_vel = np.zeros(6)
-    mujoco.mj_objectVelocity(
-        base_env.sim.model, base_env.sim.data,
-        mujoco.mjtObj.mjOBJ_BODY, base_env.obj_body_id, obj_vel, 0
-    )
-    angular_velocity_z = abs(obj_vel[2])
+        # Goal progress (how far from target)
+        goal = 90
+        goal_rad = np.deg2rad(90)
+        goal_progress = abs(goal_rad - z_rot_rad)
+        goal_abs = abs(base_env.rotation_goal_delta)  # Use delta, not absolute target
 
-    if angular_velocity_z < 0.02:
-        speed_bin = 0  # still
-    elif angular_velocity_z < 0.1:
-        speed_bin = 1  # rotating
-    else:
-        speed_bin = 2  # fast
+        # RELATIVE progress bins - 6 bins for finer control
+        if goal_abs > 0:
+            progress_ratio = goal_progress / goal_abs
+        else:
+            progress_ratio = 0
 
-    # State ID: 54 states total (3 grasp x 3 speed x 6 progress)
-    state_id = grasp_bin * 18 + speed_bin * 6 + progress_bin
+        # 6 progress bins (was 4) - more granular for better learning
+        if progress_ratio > 0.80:
+            progress_bin = 0  # very far (>80% remaining)
+        elif progress_ratio > 0.60:
+            progress_bin = 1  # far (60-80% remaining)
+        elif progress_ratio > 0.40:
+            progress_bin = 2  # medium (40-60% remaining)
+        elif progress_ratio > 0.20:
+            progress_bin = 3  # close (20-40% remaining)
+        elif progress_ratio > 0.10:
+            progress_bin = 4  # very close (10-20% remaining)
+        else:
+            progress_bin = 5  # at goal (<10% remaining)
 
-    return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
+        # Grasp strength bin (finger contact)
+        fingers_in_contact = set()
+        for i in range(base_env.sim.data.ncon):
+            contact = base_env.sim.data.contact[i]
+            geom1, geom2 = contact.geom1, contact.geom2
+            if geom1 in base_env.fingertip_geom_ids and geom2 in base_env.can_geom_ids:
+                fingers_in_contact.add(geom1)
+            elif geom2 in base_env.fingertip_geom_ids and geom1 in base_env.can_geom_ids:
+                fingers_in_contact.add(geom2)
+
+        num_fingers = len(fingers_in_contact)
+        if num_fingers <= 1:
+            grasp_bin = 0  # weak
+        elif num_fingers == 2:
+            grasp_bin = 1  # stable
+        else:
+            grasp_bin = 2  # strong
+
+        # Speed bin (angular velocity)
+        obj_vel = np.zeros(6)
+        mujoco.mj_objectVelocity(
+            base_env.sim.model, base_env.sim.data,
+            mujoco.mjtObj.mjOBJ_BODY, base_env.obj_body_id, obj_vel, 0
+        )
+        angular_velocity_z = abs(obj_vel[2])
+
+        if angular_velocity_z < 0.02:
+            speed_bin = 0  # still
+        elif angular_velocity_z < 0.1:
+            speed_bin = 1  # rotating
+        else:
+            speed_bin = 2  # fast
+
+        # State ID: 54 states total (3 grasp x 3 speed x 6 progress)
+        state_id = grasp_bin * 18 + speed_bin * 6 + progress_bin
+
+        return state_id, progress_bin, grasp_bin, speed_bin, z_rotation, goal_progress
 
 
 # ============================
