@@ -80,13 +80,15 @@ for episode in range(NUM_EPISODES):
     reward_history.append(total_reward)
     agent.decay_epsilon()
 
+    base_env.print_object_status()
+    
     # Logging every 50 episodes
     if (episode + 1) % 50 == 0:
         avg_reward = np.mean(reward_history[-50:])
         print(f"Episode {episode+1:4d}/{NUM_EPISODES} | "
               f"Avg Reward: {avg_reward:7.2f} | "
               f"Epsilon: {agent.epsilon:.3f} | "
-              f"Final Z: {z_rot:6.1f}°")
+              f"Final Z: {base_env.print_object_status}°")
 
     # Checkpoint saves
     if (episode + 1) % CHECKPOINT_INTERVAL == 0:

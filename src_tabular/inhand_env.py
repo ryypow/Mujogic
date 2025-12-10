@@ -13,8 +13,7 @@ from simulation import Simulation
 MAX_EPISODE_STEPS = 300
 TARGET_ROTATION = -90.0  # degrees (negative direction based on testing)
 TARGET_TOLERANCE = 5.0   # degrees - how close is "success"
-TARGET_ROTATION = -90.0  # degrees (negative direction based on testing)
-TARGET_TOLERANCE = 5.0   # degrees - how close is "success"
+
 
 class CanRotateEnv(gym.Env):
     metadata = {'render_modes': ['human'], 'render_fps': 30}
@@ -142,9 +141,6 @@ class CanRotateEnv(gym.Env):
     def _calculate_reward(self, cube_rotation_new, cube_rotation_prev):
 
 
-    def _calculate_reward(self, cube_rotation_new, cube_rotation_prev):
-
-
         obj_vel = np.zeros(6)
         mujoco.mj_objectVelocity(self.sim.model, self.sim.data, mujoco.mjtObj.mjOBJ_BODY, self.obj_body_id, obj_vel, 0)
         angular_velocity_z = obj_vel[2]
@@ -227,10 +223,7 @@ class CanRotateEnv(gym.Env):
             contact = self.sim.data.contact[i]
             geom1, geom2 = contact.geom1, contact.geom2
             if geom1 in self.fingertip_geom_ids and geom2 == self.can_geom_id:
-            geom1, geom2 = contact.geom1, contact.geom2
-            if geom1 in self.fingertip_geom_ids and geom2 == self.can_geom_id:
                 fingers_in_contact.add(geom1)
-            elif geom2 in self.fingertip_geom_ids and geom1 == self.can_geom_id:
             elif geom2 in self.fingertip_geom_ids and geom1 == self.can_geom_id:
                 fingers_in_contact.add(geom2)
 
@@ -246,7 +239,7 @@ class CanRotateEnv(gym.Env):
                        rotation_reward + survival_reward + contact_reward
                         - drift_penalty - stagnation_penalty)
 
-            contact_reward = 0.08 * len(fingers_in_contact)
+        contact_reward = 0.08 * len(fingers_in_contact)
 
         # === Total reward calculation ===
         total_reward = (progress_reward + milestone_bonus + nearTarget_bonus +
