@@ -29,7 +29,7 @@ DISCOUNT = 0.99
 EPSILON = 1.0
 EPSILON_DECAY = 0.997
 MIN_EPSILON = 0.05
-MEMORY = deque(maxlen=10000)
+MEMORY = deque(maxlen=10000) #replaced ExperienceMemory in DQNAgent
 
 NUM_STATES = env.observation_space.shape[0]
 NUM_ACTIONS = env.action_space.n
@@ -45,6 +45,7 @@ TARGET_DQN = DQNagent.Net(obs_space=NUM_STATES, actions=NUM_ACTIONS).to(device)
 TARGET_DQN.load_state_dict(POLICY_DQN.state_dict())
 TARGET_DQN.eval() #target NN will remain in eval mode
 
+#adam optimization
 OPTIMIZER = torch.optim.Adam(POLICY_DQN.parameters(), lr=LEARNING_RATE)
 
 
@@ -76,9 +77,9 @@ def train_step():
     #Compute loss and optimize
     loss = F.mse_loss(q_values, q_targets)
     
-    OPTIMIZER.zero_grad()
-    loss.backward()
-    OPTIMIZER.step()
+    OPTIMIZER.zero_grad() #clear gradients
+    loss.backward() #gradien descent - back prop
+    OPTIMIZER.step() #update weights
     
     return loss.item()
 
@@ -133,4 +134,4 @@ for episode in range(EPISODES):
         print(f"Episode {episode}: Target synced, model saved")
 
 torch.save(POLICY_DQN.state_dict(), 'dqn_final.pth')
-print("Training complete! Final model saved.")
+print("Training complete---- Final model saved.")

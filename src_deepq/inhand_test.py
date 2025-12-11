@@ -1,36 +1,35 @@
-# inhand_test.py (Student Skeleton)
-import time
-from inhand_env import CanRotateEnv
+# inhand_test.py - Updated for DQN
 
-# --- TODO: Import your agent class ---
-# from agent import MyRLAgent 
+import time
+import torch
+import numpy as np
+from inhand_env import CanRotateEnv
+from MinimalTranslator import MinimalTranslator
+import DQNagent
 
 # --- Configuration ---
-MODEL_PATH = "my_agent_final.pth" # Path to your saved student model
+MODEL_PATH = "dqn_final.pth" #"dqn_episode_600.pth"
 EPISODES_TO_RUN = 10
 
-# --- TODO: Load the environment ---
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# --- Load Environment (with wrapper) ---
 env = CanRotateEnv(render_mode="human")
+env = MinimalTranslator(env)
 
-# --- TODO: Load your trained agent ---
-# agent = MyRLAgent(
-#     obs_space_shape=env.observation_space.shape,
-#     action_space_shape=env.action_space.shape,
-#     device='cpu'
-# )
-# try:
-#     agent.load_model(MODEL_PATH)
-#     print(f"Successfully loaded model from {MODEL_PATH}")
-# except Exception as e:
-#     print(f"Error loading model: {e}")
-#     exit()
+# --- Load trained DQN ---
+NUM_STATES = env.observation_space.shape[0]
+NUM_ACTIONS = env.action_space.n
 
+policy_net = DQNagent.Net(obs_space=NUM_STATES, actions=NUM_ACTIONS).to(device)
+policy_net.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+policy_net.eval()  # Set to evaluation mode
 
-# --- Run the evaluation ---
+print(f"Loaded model from {MODEL_PATH}")
+
+# --- Run Evaluation ---
 for episode in range(EPISODES_TO_RUN):
     print(f"--- Starting Episode {episode + 1} ---")
-    
-    # --- TODO: Reset the environment ---
     obs, info = env.reset()
     
     terminated = False
@@ -38,22 +37,17 @@ for episode in range(EPISODES_TO_RUN):
     total_reward = 0
     
     while not (terminated or truncated):
+        # Deterministic action (no exploration)
+        with torch.no_grad():
+            state_tensor = torch.FloatTensor(obs).unsqueeze(0).to(device)
+            q_values = policy_net(state_tensor)
+            action = q_values.argmax(dim=1).item()
         
-        # --- TODO: Get a deterministic action from your agent ---
-        # The 'deterministic=True' part is key for testing
-        # action = agent.get_action(obs, deterministic=True)
-        action = env.action_space.sample() # Placeholder: Replace with your agent's action
-        
-        # --- TODO: Step the environment ---
         obs, reward, terminated, truncated, info = env.step(action)
-        
         total_reward += reward
-        
-        # Render/sleep is handled by the environment's step/render methods
-        time.sleep(1/60) # Keep visualization smooth
+        time.sleep(1/60)
         
     print(f"Episode {episode + 1} finished. Total Reward: {total_reward:.2f}")
 
-# Clean up
 env.close()
 print("\nEvaluation finished.")
