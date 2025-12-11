@@ -5,6 +5,7 @@ import mujoco
 import mujoco.viewer as mjv
 import gymnasium as gym
 from gymnasium import spaces
+from scipy.spatial.transform import Rotation as R
 
 from simulation import Simulation
 

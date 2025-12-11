@@ -59,11 +59,11 @@ def train_step():
     states, actions, next_states, rewards, dones = zip(*batch)
     
     #Convert to tensors
-    states = torch.FloatTensor(states)           # [64, 20]
-    actions = torch.LongTensor(actions).unsqueeze(1)  # [64, 1]
-    next_states = torch.FloatTensor(next_states) # [64, 20]
-    rewards = torch.FloatTensor(rewards)         # [64]
-    dones = torch.FloatTensor(dones)             # [64]
+    states = torch.FloatTensor(np.array(states))
+    actions = torch.LongTensor(np.array(actions)).unsqueeze(1)
+    next_states = torch.FloatTensor(np.array(next_states))
+    rewards = torch.FloatTensor(np.array(rewards))
+    dones = torch.FloatTensor(np.array(dones))
     
     #Compute current Q-values
     q_values = POLICY_DQN(states).gather(1, actions).squeeze()  # [64]
