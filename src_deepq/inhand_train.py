@@ -2,85 +2,125 @@
 import os
 import numpy as np
 import time
-from inhand_env import CanRotateEnv 
-# --- TODO: Import your agent class ---
-# from agent import MyRLAgent  # e.g., PPOAgent
+import matplotlib as plt
+import random
+import torch
+from torch import nn
+import torch.nn.functional as F
+from collections import deque
+import gymnasium as gym
+from gymnasium import spaces
 
-# Create a directory to save logs and models
-log_dir = "my_agent_logs/"
-os.makedirs(log_dir, exist_ok=True)
+from inhand_env import CanRotateEnv 
+import DQNagent
+from MinimalTranslator import MinimalTranslator
+
+
+env = CanRotateEnv(render_mode="headless")
+env = MinimalTranslator(env) #wrap env actions
 
 # --- Configuration ---
-TOTAL_TIMESTEPS = 8_000_000
-STEPS_PER_COLLECT = 2048  # How many steps to run per "collect" phase
-LEARNING_RATE = 3e-4
-DEVICE = 'cpu' # 'cuda' or 'cpu'
+EPISODES = 1000
+STEPS = 300
+LEARNING_RATE = 0.001
+DISCOUNT = 0.9
+EPSILON = 1.0
+EPSILON_DECAY = 0.997
+MIN_EPSILON = 0.05
+MEMORY = deque(maxlen=10000)
 
-# --- TODO: Initialize the Environment ---
-env = CanRotateEnv(render_mode="headless")
-print(f"Observation space: {env.observation_space.shape}")
-print(f"Action space: {env.action_space.shape}")
+NUM_STATES = env.observation_space.shape
+NUM_ACTIONS = env.action_space.n
 
-# --- TODO: Initialize your Agent ---
-# agent = MyRLAgent(
-#     obs_space_shape=env.observation_space.shape,
-#     action_space_shape=env.action_space.shape,
-#     learning_rate=LEARNING_RATE,
-#     device=DEVICE
-# )
-# agent.load_model("my_agent.pth") # Optional: to continue training
+
+#NN
+NETWORK_SYNC = 10 #THIS WILL SYNC POLICY AND TARGET NETWORK EVERY 10 STEPS
+LEARN_DELAY = 1000 #starts training after 1000 transitions
+BATCH = 64
+LOSS_FN = nn.MSELoss() #predicts q-values
+POLICY_DQN = DQNagent.Net(obs_space=NUM_STATES, actions=NUM_ACTIONS)
+TARGET_DQN = DQNagent.Net(obs_space=NUM_STATES, actions=NUM_ACTIONS)
+TARGET_DQN.load_state_dict(POLICY_DQN.state_dict())
+TARGET_DQN.eval() #target NN will remain in eval mode
+
+OPTIMIZER = torch.optim.Adam(POLICY_DQN.parameters(), lr=LEARNING_RATE)
+
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Using: {device}")
+
+
+def train_step():
+    if len(MEMORY) < LEARN_DELAY:
+        return  # Wait until enough experiences
+    
+    #Sample minibatch
+    batch = random.sample(MEMORY, BATCH)
+    states, actions, next_states, rewards, dones = zip(*batch)
+    
+    #Convert to tensors
+    states = torch.FloatTensor(states)           # [64, 20]
+    actions = torch.LongTensor(actions).unsqueeze(1)  # [64, 1]
+    next_states = torch.FloatTensor(next_states) # [64, 20]
+    rewards = torch.FloatTensor(rewards)         # [64]
+    dones = torch.FloatTensor(dones)             # [64]
+    
+    #Compute current Q-values
+    q_values = POLICY_DQN(states).gather(1, actions).squeeze()  # [64]
+    
+    #Compute target Q-values
+    with torch.no_grad():
+        next_q = TARGET_DQN(next_states).max(dim=1)[0]  # [64]
+        q_targets = rewards + DISCOUNT * next_q * (1 - dones)
+    
+    #Compute loss and optimize
+    loss = F.mse_loss(q_values, q_targets)
+    
+    OPTIMIZER.zero_grad()
+    loss.backward()
+    OPTIMIZER.step()
+    
+    return loss.item()
 
 print("Starting training...")
 
-# --- TODO: Write the main training loop ---
-# This is just one example of an on-policy (like PPO) training loop.
-# An off-policy loop (like DDPG/SAC) would look different.
-
 obs, info = env.reset()
-global_step = 0
+step_count = 0
 
-while global_step < TOTAL_TIMESTEPS:
+for episode in range(EPISODES):
+    state, info = env.reset()
+    terminated = False
+    truncated = False
     
-    # --- 1. Collect a batch of experiences ---
-    # (You will need to create lists or buffers to store these)
-    # trajectory_buffer = [] 
-    
-    print(f"Collecting trajectory... (Step {global_step}/{TOTAL_TIMESTEPS})")
-    
-    for _ in range(STEPS_PER_COLLECT):
-        # --- TODO: Get an action from your agent's policy ---
-        # action, log_prob, value = agent.get_action_and_value(obs)
-        action = env.action_space.sample() # Placeholder: Replace with your agent's action
-        
-        # --- TODO: Step the environment ---
-        next_obs, reward, terminated, truncated, info = env.step(action)
-        
-        # --- TODO: Store the transition in your buffer ---
-        # e.g., trajectory_buffer.append( (obs, action, log_prob, reward, terminated, value) )
+    for step in range(STEPS):
+        if random.random() < EPSILON:
+            action = env.action_space.sample()
+        else:
+            with torch.no_grad():
+                state_tensor = torch.FloatTensor(state).unsqueeze(0)
+                q_val = POLICY_DQN(state_tensor)
+                action = q_val.argmax(dim=1).item()
 
-        global_step += 1
-        obs = next_obs
-        
-        # Handle episode end
+        #perfrom action
+        new_state, reward, terminated, truncated,_ = env.step(action)
+        #if len(MEMORY) < BATCH:
+         #    break
+        #else:
+        #     batch = random.sample(MEMORY, BATCH)
+
+        MEMORY.append((state,action,new_state,reward,truncated))
+
+        step_count += 1
+
+        train_step()
+        state = new_state
+
+
         if terminated or truncated:
-            print(f"Episode finished at step {global_step}.")
-            obs, info = env.reset()
+            break
 
-    # --- 2. Update the agent's policy ---
-    # (This is where you'd calculate advantages, PPO clip loss, etc.)
-    print("Updating policy...")
-    # --- TODO: Call your agent's update/learn function ---
-    # agent.learn(trajectory_buffer)
+    EPSILON = max(MIN_EPSILON, EPSILON * EPSILON_DECAY)
 
-    # --- 3. Save the model periodically ---
-    if global_step % 50000 == 0:
-        save_path = f"my_agent_logs/model_step_{global_step}.pth"
-        # --- TODO: Implement your agent's save method ---
-        # agent.save_model(save_path)
-        print(f"Model saved to {save_path}")
-
-
-# --- TODO: Final save and cleanup ---
-# agent.save_model("my_agent_final.pth")
-env.close()
-print("Training finished.")
+    if episode % 100 == 0:
+        TARGET_DQN.load_state_dict(POLICY_DQN.state_dict())
+        print(f"Episode {episode}: target networks synced")

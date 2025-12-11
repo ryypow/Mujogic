@@ -39,7 +39,7 @@ class CanRotateEnv(gym.Env):
         
         # Define action and observation spaces
         self.action_space = spaces.Box(low=-0.03, high=0.03, shape=(16,), dtype=np.float32)
-        obs_size = len(self.sim.hand_joint_ids) + 7
+        obs_size = len(self.sim.hand_joint_ids) + 4 #16 joints, 3 position, and 1 (remaining rotation)
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32)
 
         self.render_mode = render_mode
@@ -83,14 +83,15 @@ class CanRotateEnv(gym.Env):
         # Print to console
         print(f"  > Object Position (x, y, z):  ({obj_pos[0]:.4f}, {obj_pos[1]:.4f}, {obj_pos[2]:.4f})")
         print(f"  > Object Z Rotation (degrees): {obj_z_rot:.2f}°")
+
     def get_rotation_achieved(self):
         """how many degrees rotated from start"""
         current = self.get_object_z_rotation()
         diff = current - self.initial_z_rotation
 
         if diff > 180.0:
-            diff = -360
-        elif diff < 180.0:
+            diff -= 360
+        elif diff < -180.0:
             diff += 360.0
 
         return abs(diff)
@@ -125,7 +126,7 @@ class CanRotateEnv(gym.Env):
         survival_reward = 0.1 - distance_from_palm
 
         if self.sim.data.xpos[self.obj_body_id][2] < 0.3:
-            survival_reward = -200.0
+            survival_reward = -10.0
 
         #Progress toward goal
         dist_new = abs(TARGET_ROTATION -z_rotat_new)
@@ -138,7 +139,7 @@ class CanRotateEnv(gym.Env):
 
     def _is_terminated(self):
         dropped = self.sim.data.xpos[self.obj_body_id][2] < 0.3
-        success = self.get_rotation_achieved() >= 90.0
+        success = self.get_rotation_achieved() >= (90.0 - TARGET_TOLERANCE)
         return dropped or success
 
     def reset(self, seed=None, options=None):
@@ -183,6 +184,8 @@ class CanRotateEnv(gym.Env):
         return self._get_obs(), {}
 
     def step(self, action):
+        z_rot_prev = self.get_object_z_rotation()
+
         target_angles = np.array([self.sim.data.qpos[self.sim.model.jnt_qposadr[j]] for j in self.sim.hand_joint_ids]) + action
         self.sim.move_gripper_to_angles(target_angles, 0.5) #
 
@@ -191,8 +194,9 @@ class CanRotateEnv(gym.Env):
 
         self.step_count += 1
         
+        z_rot_new = self.get_object_z_rotation()
         observation = self._get_obs()
-        reward = self._calculate_reward()
+        reward = self._calculate_reward(z_rot_new, z_rot_prev)
         terminated = self._is_terminated()
         truncated = self.step_count >= MAX_EPISODE_STEPS
 
