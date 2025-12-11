@@ -40,8 +40,8 @@ NETWORK_SYNC = 10 #THIS WILL SYNC POLICY AND TARGET NETWORK EVERY 10 STEPS
 LEARN_DELAY = 1000 #starts training after 1000 transitions
 BATCH = 64
 LOSS_FN = nn.MSELoss() #predicts q-values
-POLICY_DQN = DQNagent.Net(obs_space=NUM_STATES, actions=NUM_ACTIONS)
-TARGET_DQN = DQNagent.Net(obs_space=NUM_STATES, actions=NUM_ACTIONS)
+POLICY_DQN = DQNagent.Net(obs_space=NUM_STATES, actions=NUM_ACTIONS).to(device)
+TARGET_DQN = DQNagent.Net(obs_space=NUM_STATES, actions=NUM_ACTIONS).to(device)
 TARGET_DQN.load_state_dict(POLICY_DQN.state_dict())
 TARGET_DQN.eval() #target NN will remain in eval mode
 
@@ -59,11 +59,11 @@ def train_step():
     states, actions, next_states, rewards, dones = zip(*batch)
     
     #Convert to tensors
-    states = torch.FloatTensor(np.array(states))
-    actions = torch.LongTensor(np.array(actions)).unsqueeze(1)
-    next_states = torch.FloatTensor(np.array(next_states))
-    rewards = torch.FloatTensor(np.array(rewards))
-    dones = torch.FloatTensor(np.array(dones))
+    states = torch.FloatTensor(np.array(states)).to(device)
+    actions = torch.LongTensor(np.array(actions)).unsqueeze(1).to(device)
+    next_states = torch.FloatTensor(np.array(next_states)).to(device)
+    rewards = torch.FloatTensor(np.array(rewards)).to(device)
+    dones = torch.FloatTensor(np.array(dones)).to(device)
     
     #Compute current Q-values
     q_values = POLICY_DQN(states).gather(1, actions).squeeze()  # [64]
@@ -98,7 +98,7 @@ for episode in range(EPISODES):
             action = env.action_space.sample()
         else:
             with torch.no_grad():
-                state_tensor = torch.FloatTensor(state).unsqueeze(0)
+                state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
                 q_val = POLICY_DQN(state_tensor)
                 action = q_val.argmax(dim=1).item()
 
