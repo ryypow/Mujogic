@@ -1,0 +1,480 @@
+<mujoco model="ur5e_leap_hand">
+
+  <!-- 1) Combined Compiler and Options -->
+  <compiler angle="radian" meshdir="assets" autolimits="true"/>
+  <option integrator="implicitfast" cone="elliptic" impratio="10"/>
+
+  <!-- 2) Combined <default>
+         - UR5e defaults (class="ur5e")
+         - Right Leap Hand defaults (class="right_leap") -->
+  <default>
+
+    <!-- UR5e Defaults -->
+    <default class="ur5e">
+      <material specular="0.5" shininess="0.25"/>
+      <joint axis="0 1 0" range="-6.28319 6.28319" armature="0.1"/>
+      <general gaintype="fixed" biastype="affine" ctrlrange="-6.2831 6.2831"
+               gainprm="2000" biasprm="0 -2000 -400" forcerange="-150 150"/>
+
+      <default class="size3">
+        <default class="size3_limited">
+          <joint range="-3.1415 3.1415"/>
+          <general ctrlrange="-3.1415 3.1415"/>
+        </default>
+      </default>
+
+      <default class="size1">
+        <general gainprm="500" biasprm="0 -500 -100" forcerange="-28 28"/>
+      </default>
+
+      <default class="arm_visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+      </default>
+
+      <default class="arm_collision">
+        <geom type="capsule" group="3"/>
+        <default class="eef_collision">
+          <geom type="cylinder"/>
+        </default>
+      </default>
+
+      <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4"/>
+    </default>
+
+    <!-- Right Leap Hand Defaults -->
+    <default class="right_leap">
+      <site size="0.002" rgba="0.5 0.5 0.5 0.3" group="4"/>
+      <joint axis="0 0 -1" armature="0.01"/>
+      <position inheritrange="1" kp="20" dampratio="1"/>
+
+      <default class="hand_visual">
+        <!-- Using a custom material "black_leap" to avoid collision with UR5 "black" -->
+        <geom group="2" type="mesh" contype="0" conaffinity="0"
+              density="0" material="black_leap"/>
+      </default>
+
+      <default class="hand_collision">
+        <geom group="3" type="mesh"/>
+      </default>
+    </default>
+
+  </default>
+
+  <!-- 3) <asset>
+         - UR5e materials/meshes
+         - Leap hand material/meshes (renamed "black" -> "black_leap") -->
+  <asset>
+    <!-- UR5e Materials -->
+    <material class="ur5e" name="black"     rgba="0.033 0.033 0.033 1"/>
+    <material class="ur5e" name="jointgray" rgba="0.278 0.278 0.278 1"/>
+    <material class="ur5e" name="linkgray"  rgba="0.82 0.82 0.82 1"/>
+    <material class="ur5e" name="urblue"    rgba="0.49 0.678 0.8 1"/>
+
+    <!-- UR5e Meshes -->
+    <mesh file="base_0.obj"/>
+    <mesh file="base_1.obj"/>
+    <mesh file="shoulder_0.obj"/>
+    <mesh file="shoulder_1.obj"/>
+    <mesh file="shoulder_2.obj"/>
+    <mesh file="upperarm_0.obj"/>
+    <mesh file="upperarm_1.obj"/>
+    <mesh file="upperarm_2.obj"/>
+    <mesh file="upperarm_3.obj"/>
+    <mesh file="forearm_0.obj"/>
+    <mesh file="forearm_1.obj"/>
+    <mesh file="forearm_2.obj"/>
+    <mesh file="forearm_3.obj"/>
+    <mesh file="wrist1_0.obj"/>
+    <mesh file="wrist1_1.obj"/>
+    <mesh file="wrist1_2.obj"/>
+    <mesh file="wrist2_0.obj"/>
+    <mesh file="wrist2_1.obj"/>
+    <mesh file="wrist2_2.obj"/>
+    <mesh file="wrist3.obj"/>
+
+    <!-- Leap Hand Material -->
+    <material name="black_leap" rgba="0.2 0.2 0.2 1"/>
+
+    <!-- Leap Hand Meshes -->
+    <mesh file="palm_lower.stl"/>
+    <mesh file="mcp_joint.stl"/>
+    <mesh file="pip.stl"/>
+    <mesh file="dip.stl"/>
+    <mesh file="fingertip.stl"/>
+    <mesh file="thumb_pip.stl"/>
+    <mesh file="thumb_dip.stl"/>
+    <mesh file="thumb_fingertip.stl"/>
+  </asset>
+
+  <!-- 4) <worldbody>
+         - UR5e structure
+         - Leap hand attached to UR5's "wrist_3_link" -->
+  <worldbody>
+    <!-- =============== UR5e Base Body =============== -->
+    <body name="base" quat="1 0 0 1" childclass="ur5e">
+      <inertial mass="4.0" pos="0 0 0"
+                diaginertia="0.00443333156 0.00443333156 0.0072"/>
+      <geom mesh="base_0" material="black" class="arm_visual"/>
+      <geom mesh="base_1" material="jointgray" class="arm_visual"/>
+
+      <body name="shoulder_link" pos="0 0 0.163">
+        <inertial mass="3.7" pos="0 0 0" diaginertia="0.0102675 0.0102675 0.00666"/>
+        <joint name="shoulder_pan_joint" class="size3" axis="0 0 1"/>
+        <geom mesh="shoulder_0" material="urblue"    class="arm_visual"/>
+        <geom mesh="shoulder_1" material="black"     class="arm_visual"/>
+        <geom mesh="shoulder_2" material="jointgray" class="arm_visual"/>
+        <geom class="arm_collision" size="0.06 0.06" pos="0 0 -0.04"/>
+
+        <body name="upper_arm_link" pos="0 0.138 0" quat="1 0 1 0">
+          <inertial mass="8.393" pos="0 0 0.2125"
+                    diaginertia="0.133886 0.133886 0.0151074"/>
+          <joint name="shoulder_lift_joint" class="size3"/>
+          <geom mesh="upperarm_0" material="linkgray"  class="arm_visual"/>
+          <geom mesh="upperarm_1" material="black"     class="arm_visual"/>
+          <geom mesh="upperarm_2" material="jointgray" class="arm_visual"/>
+          <geom mesh="upperarm_3" material="urblue"    class="arm_visual"/>
+          <geom class="arm_collision" pos="0 -0.04 0" quat="1 1 0 0" size="0.06 0.06"/>
+          <geom class="arm_collision" size="0.05 0.2" pos="0 0 0.2"/>
+
+          <body name="forearm_link" pos="0 -0.131 0.425">
+            <inertial mass="2.275" pos="0 0 0.196"
+                      diaginertia="0.0311796 0.0311796 0.004095"/>
+            <joint name="elbow_joint" class="size3_limited"/>
+            <geom mesh="forearm_0" material="urblue"    class="arm_visual"/>
+            <geom mesh="forearm_1" material="linkgray"  class="arm_visual"/>
+            <geom mesh="forearm_2" material="black"     class="arm_visual"/>
+            <geom mesh="forearm_3" material="jointgray" class="arm_visual"/>
+            <geom class="arm_collision" pos="0 0.08 0" quat="1 1 0 0" size="0.055 0.06"/>
+            <geom class="arm_collision" size="0.038 0.19" pos="0 0 0.2"/>
+
+            <body name="wrist_1_link" pos="0 0 0.392" quat="1 0 1 0">
+              <inertial mass="1.219" pos="0 0.127 0"
+                        diaginertia="0.0025599 0.0025599 0.0021942"/>
+              <joint name="wrist_1_joint" class="size1"/>
+              <geom mesh="wrist1_0" material="black"     class="arm_visual"/>
+              <geom mesh="wrist1_1" material="urblue"    class="arm_visual"/>
+              <geom mesh="wrist1_2" material="jointgray" class="arm_visual"/>
+              <geom class="arm_collision" pos="0 0.05 0" quat="1 1 0 0" size="0.04 0.07"/>
+
+              <body name="wrist_2_link" pos="0 0.127 0">
+                <inertial mass="1.219" pos="0 0 0.1"
+                          diaginertia="0.0025599 0.0025599 0.0021942"/>
+                <joint name="wrist_2_joint" axis="0 0 1" class="size1"/>
+                <geom mesh="wrist2_0" material="black"     class="arm_visual"/>
+                <geom mesh="wrist2_1" material="urblue"    class="arm_visual"/>
+                <geom mesh="wrist2_2" material="jointgray" class="arm_visual"/>
+                <geom class="arm_collision" size="0.04 0.06" pos="0 0 0.04"/>
+                <geom class="arm_collision" pos="0 0.02 0.1" quat="1 1 0 0" size="0.04 0.04"/>
+
+                <body name="wrist_3_link" pos="0 0 0.1">
+                  <inertial mass="0.1889" pos="0 0.0771683 0" quat="1 0 0 1"
+                            diaginertia="0.000132134 9.90863e-05 9.90863e-05"/>
+                  <joint name="wrist_3_joint" class="size1"/>
+                  <geom material="linkgray" mesh="wrist3" class="arm_visual"/>
+                  <geom class="eef_collision" pos="0 0.08 0"
+                        quat="1 1 0 0" size="0.04 0.02"/>
+                  <site name="attachment_site" pos="0 0.1 0" quat="-1 1 0 0"/>
+
+                  <!-- =============== Leap Hand Attached =============== -->
+                  <body name="leap_hand" childclass="right_leap"
+                        pos="0.06 0 0.04" quat="-0.707107 0.707107 0 0">
+                    <!-- You can adjust pos/quat above if needed to align physically -->
+
+                    <!-- ============= palm_lower (root of Leap hand) ============= -->
+                    <body name="palm_lower" pos="0 0 0.1" quat="0 1 0 0">
+                      <inertial pos="0 0 0" quat="0.497095 0.495942 -0.509424 0.497419"
+                                mass="0.237"
+                                diaginertia="0.000529322 0.000354076 0.000260868"/>
+                      <geom mesh="palm_lower" class="hand_visual"
+                            pos="-0.0200952 0.0257578 -0.0347224" quat="1 0 0 0"/>
+                      <geom mesh="palm_lower" class="hand_collision"
+                            pos="-0.0200952 0.0257578 -0.0347224" quat="1 0 0 0"/>
+
+                      <site name="finger1_base" pos="-0.00709525 0.0230578 -0.0187224" size="0.002" rgba="0 0 1 0.5"/>
+                      <site name="finger2_base" pos="-0.00709525 -0.0223922 -0.0187224" size="0.002" rgba="0 0 1 0.5"/>
+                      <site name="finger3_base" pos="-0.00709525 -0.0678422 -0.0187224" size="0.002" rgba="0 0 1 0.5"/>
+                      <site name="thumb_base"   pos="-0.0693952 -0.00124224 -0.0216224" size="0.002" rgba="0 0 1 0.5"/>
+
+
+                      <!-- Finger 1 (mcp_joint -> pip -> dip -> fingertip) -->
+                      <body name="mcp_joint" pos="-0.00709525 0.0230578 -0.0187224"
+                            quat="1 1 1 -1">
+                        <inertial pos="0 0 0"
+                                  quat="0.388585 0.626468 -0.324549 0.592628"
+                                  mass="0.044"
+                                  diaginertia="1.47756e-05 1.31982e-05 6.0802e-06"/>
+                        <joint name="1" range="-0.314 2.23" actuatorfrcrange="-0.95 0.95"/>
+                        <geom mesh="mcp_joint" class="hand_visual"
+                              pos="0.0084069 0.00776624 0.0146574" quat="1 0 0 0"/>
+                        <geom mesh="mcp_joint" class="hand_collision"
+                              pos="0.0084069 0.00776624 0.0146574" quat="1 0 0 0"/>
+
+                        <body name="pip" pos="-0.0122 0.0381 0.0145"
+                              quat="1 -1 -1 1">
+                          <inertial pos="0 0 0"
+                                    quat="0.709913 0.704273 -0.000363156 0.00475427"
+                                    mass="0.032"
+                                    diaginertia="4.7981e-06 4.23406e-06 2.86184e-06"/>
+                          <joint name="0" range="-1.047 1.047" actuatorfrcrange="-0.95 0.95"/>
+                          <geom mesh="pip" class="hand_visual"
+                                pos="0.00964336 0.0003 0.000784034"
+                                quat="1 -1 -1 -1"/>
+                          <geom mesh="pip" class="hand_collision"
+                                pos="0.00964336 0.0003 0.000784034"
+                                quat="1 -1 -1 -1"/>
+
+                          <body name="dip" pos="0.015 0.0143 -0.013" quat="1 1 -1 1">
+                            <inertial pos="0 0 0"
+                                      quat="-0.252689 0.659216 0.238844 0.666735"
+                                      mass="0.037"
+                                      diaginertia="6.68256e-06 6.24841e-06 5.02002e-06"/>
+                            <joint name="2" range="-0.506 1.885" actuatorfrcrange="-0.95 0.95"/>
+                            <geom mesh="dip" class="hand_visual"
+                                  pos="0.0211334 -0.00843212 0.00978509"
+                                  quat="0 -1 0 0"/>
+                            <geom mesh="dip" class="hand_collision"
+                                  pos="0.0211334 -0.00843212 0.00978509"
+                                  quat="0 -1 0 0"/>
+
+                            <body name="fingertip" pos="-4.08806e-09 -0.0361 0.0002">
+                              <inertial pos="0 0 0"
+                                        quat="0.706755 0.706755 0.0223155 0.0223155"
+                                        mass="0.016"
+                                        diaginertia="3.37527e-06 2.863e-06 1.54873e-06"/>
+                              <joint name="3" range="-0.366 2.042" actuatorfrcrange="-0.95 0.95"/>
+                              <geom mesh="fingertip" class="hand_visual"
+                                    pos="0.0132864 -0.00611424 0.0145" quat="0 1 0 0"/>
+                              <geom mesh="fingertip" class="hand_collision"
+                                    pos="0.0132864 -0.00611424 0.0145" quat="0 1 0 0"/>
+                              <site name="fingertip1_site" pos="0 -0.045 0.015" size="0.01" rgba="1 0 0 0" group="0"/>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+
+                      <!-- Finger 2 (mcp_joint_2 -> pip_2 -> dip_2 -> fingertip_2) -->
+                      <body name="mcp_joint_2" pos="-0.00709525 -0.0223922 -0.0187224"
+                            quat="1 1 1 -1">
+                        <inertial pos="0 0 0"
+                                  quat="0.388585 0.626468 -0.324549 0.592628"
+                                  mass="0.044"
+                                  diaginertia="1.47756e-05 1.31982e-05 6.0802e-06"/>
+                        <joint name="5" range="-0.314 2.23" actuatorfrcrange="-0.95 0.95"/>
+                        <geom mesh="mcp_joint" class="hand_visual"
+                              pos="0.0084069 0.00776624 0.0146574" quat="1 0 0 0"/>
+                        <geom mesh="mcp_joint" class="hand_collision"
+                              pos="0.0084069 0.00776624 0.0146574" quat="1 0 0 0"/>
+
+                        <body name="pip_2" pos="-0.0122 0.0381 0.0145"
+                              quat="1 -1 -1 1">
+                          <inertial pos="0 0 0"
+                                    quat="0.709913 0.704273 -0.000363156 0.00475427"
+                                    mass="0.032"
+                                    diaginertia="4.7981e-06 4.23406e-06 2.86184e-06"/>
+                          <joint name="4" range="-1.047 1.047" actuatorfrcrange="-0.95 0.95"/>
+                          <geom mesh="pip" class="hand_visual"
+                                pos="0.00964336 0.0003 0.000784034"
+                                quat="1 -1 -1 -1"/>
+                          <geom mesh="pip" class="hand_collision"
+                                pos="0.00964336 0.0003 0.000784034"
+                                quat="1 -1 -1 -1"/>
+
+                          <body name="dip_2" pos="0.015 0.0143 -0.013" quat="1 1 -1 1">
+                            <inertial pos="0 0 0"
+                                      quat="-0.252689 0.659216 0.238844 0.666735"
+                                      mass="0.037"
+                                      diaginertia="6.68256e-06 6.24841e-06 5.02002e-06"/>
+                            <joint name="6" range="-0.506 1.885" actuatorfrcrange="-0.95 0.95"/>
+                            <geom mesh="dip" class="hand_visual"
+                                  pos="0.0211334 -0.00843212 0.00978509"
+                                  quat="0 -1 0 0"/>
+                            <geom mesh="dip" class="hand_collision"
+                                  pos="0.0211334 -0.00843212 0.00978509"
+                                  quat="0 -1 0 0"/>
+
+                            <body name="fingertip_2" pos="0 -0.0361 0.0002">
+                              <inertial pos="0 0 0"
+                                        quat="0.706755 0.706755 0.0223155 0.0223155"
+                                        mass="0.016"
+                                        diaginertia="3.37527e-06 2.863e-06 1.54873e-06"/>
+                              <joint name="7" range="-0.366 2.042" actuatorfrcrange="-0.95 0.95"/>
+                              <geom mesh="fingertip" class="hand_visual"
+                                    pos="0.0132864 -0.00611424 0.0145" quat="0 1 0 0"/>
+                              <geom mesh="fingertip" class="hand_collision"
+                                    pos="0.0132864 -0.00611424 0.0145" quat="0 1 0 0"/>
+                              <site name="fingertip2_site" pos="0 -0.045 0.015" size="0.001" rgba="1 0 0 0" group="0"/>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+
+                      <!-- Finger 3 (mcp_joint_3 -> pip_3 -> dip_3 -> fingertip_3) -->
+                      <body name="mcp_joint_3" pos="-0.00709525 -0.0678422 -0.0187224"
+                            quat="1 1 1 -1">
+                        <inertial pos="0 0 0"
+                                  quat="0.388585 0.626468 -0.324549 0.592628"
+                                  mass="0.044"
+                                  diaginertia="1.47756e-05 1.31982e-05 6.0802e-06"/>
+                        <joint name="9" range="-0.314 2.23" actuatorfrcrange="-0.95 0.95"/>
+                        <geom mesh="mcp_joint" class="hand_visual"
+                              pos="0.0084069 0.00776624 0.0146574" quat="1 0 0 0"/>
+                        <geom mesh="mcp_joint" class="hand_collision"
+                              pos="0.0084069 0.00776624 0.0146574" quat="1 0 0 0"/>
+
+                        <body name="pip_3" pos="-0.0122 0.0381 0.0145"
+                              quat="1 -1 -1 1">
+                          <inertial pos="0 0 0"
+                                    quat="0.709913 0.704273 -0.000363156 0.00475427"
+                                    mass="0.032"
+                                    diaginertia="4.7981e-06 4.23406e-06 2.86184e-06"/>
+                          <joint name="8" range="-1.047 1.047" actuatorfrcrange="-0.95 0.95"/>
+                          <geom mesh="pip" class="hand_visual"
+                                pos="0.00964336 0.0003 0.000784034"
+                                quat="1 -1 -1 -1"/>
+                          <geom mesh="pip" class="hand_collision"
+                                pos="0.00964336 0.0003 0.000784034"
+                                quat="1 -1 -1 -1"/>
+
+                          <body name="dip_3" pos="0.015 0.0143 -0.013" quat="1 1 -1 1">
+                            <inertial pos="0 0 0"
+                                      quat="-0.252689 0.659216 0.238844 0.666735"
+                                      mass="0.037"
+                                      diaginertia="6.68256e-06 6.24841e-06 5.02002e-06"/>
+                            <joint name="10" range="-0.506 1.885" actuatorfrcrange="-0.95 0.95"/>
+                            <geom mesh="dip" class="hand_visual"
+                                  pos="0.0211334 -0.00843212 0.00978509"
+                                  quat="0 -1 0 0"/>
+                            <geom mesh="dip" class="hand_collision"
+                                  pos="0.0211334 -0.00843212 0.00978509"
+                                  quat="0 -1 0 0"/>
+
+                            <body name="fingertip_3" pos="0 -0.0361 0.0002">
+                              <inertial pos="0 0 0"
+                                        quat="0.706755 0.706755 0.0223155 0.0223155"
+                                        mass="0.016"
+                                        diaginertia="3.37527e-06 2.863e-06 1.54873e-06"/>
+                              <joint name="11" range="-0.366 2.042" actuatorfrcrange="-0.95 0.95"/>
+                              <geom mesh="fingertip" class="hand_visual"
+                                    pos="0.0132864 -0.00611424 0.0145" quat="0 1 0 0"/>
+                              <geom mesh="fingertip" class="hand_collision"
+                                    pos="0.0132864 -0.00611424 0.0145" quat="0 1 0 0"/>
+                              <site name="fingertip3_site" pos="0 -0.045 0.015" size="0.001" rgba="1 0 0 0" group="0"/>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+
+                      <!-- Thumb (pip_4 -> thumb_pip -> thumb_dip -> thumb_fingertip) -->
+                      <body name="pip_4" pos="-0.0693952 -0.00124224 -0.0216224"
+                            quat="1 0 1 0">
+                        <inertial pos="0 0 0"
+                                  quat="0.709913 0.704273 -0.000363156 0.00475427"
+                                  mass="0.032"
+                                  diaginertia="4.7981e-06 4.23406e-06 2.86184e-06"/>
+                        <joint name="12" range="-0.349 2.094" actuatorfrcrange="-0.95 0.95"/>
+                        <geom mesh="pip" class="hand_visual"
+                              pos="-0.00535664 0.0003 0.000784034"
+                              quat="1 -1 -1 -1"/>
+                        <geom mesh="pip" class="hand_collision"
+                              pos="-0.00535664 0.0003 0.000784034"
+                              quat="1 -1 -1 -1"/>
+
+                        <body name="thumb_pip" pos="0 0.0143 -0.013" quat="1 1 -1 1">
+                          <inertial pos="0 0 0"
+                                    mass="0.003"
+                                    diaginertia="5.93e-07 5.49e-07 2.24e-07"/>
+                          <joint name="13" range="-0.47 2.443" actuatorfrcrange="-0.95 0.95"/>
+                          <geom mesh="thumb_pip" class="hand_visual"
+                                pos="0.0119619 0 -0.0158526" quat="1 1 0 0"/>
+                          <geom mesh="thumb_pip" class="hand_collision"
+                                pos="0.0119619 0 -0.0158526" quat="1 1 0 0"/>
+
+                          <body name="thumb_dip" pos="0 0.0145 -0.017"
+                                quat="1 -1 0 0">
+                            <inertial pos="0 0 0"
+                                      quat="0.708624 0.704906 0.00637342 0.0303153"
+                                      mass="0.038"
+                                      diaginertia="8.48742e-06 7.67823e-06 3.82835e-06"/>
+                            <joint name="14" range="-1.2 1.9" actuatorfrcrange="-0.95 0.95"/>
+                            <geom mesh="thumb_dip" class="hand_visual"
+                                  pos="0.0439687 0.057953 -0.00862868"
+                                  quat="1 0 0 0"/>
+                            <geom mesh="thumb_dip" class="hand_collision"
+                                  pos="0.0439687 0.057953 -0.00862868"
+                                  quat="1 0 0 0"/>
+
+                            <body name="thumb_fingertip" pos="0 0.0466 0.0002" quat="0 0 0 1">
+                              <inertial pos="0 0 0"
+                                        quat="0.704307 0.709299 0.006848 -0.0282727"
+                                        mass="0.049"
+                                        diaginertia="2.03882e-05 1.98443e-05 4.32049e-06"/>
+                              <joint name="15" range="-1.34 1.88" actuatorfrcrange="-0.95 0.95"/>
+                              <geom mesh="thumb_fingertip" class="hand_visual"
+                                    pos="0.0625595 0.0784597 0.0489929" quat="1 0 0 0"/>
+                              <geom mesh="thumb_fingertip" class="hand_collision"
+                                    pos="0.0625595 0.0784597 0.0489929" quat="1 0 0 0"/>
+                              <site name="thumb_fingertip" pos="-0.005 -0.055 -0.015" size="0.01" rgba="1 0 0 0" group="0"/>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+
+                    </body> <!-- end palm_lower -->
+                  </body> <!-- end leap_hand -->
+
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+  </worldbody>
+
+  <!-- 5) Combined <actuator>
+         - UR5e actuators (general)
+         - Leap hand actuators (position) -->
+  <actuator>
+    <!-- UR5e Joint Actuators -->
+    <general class="size3"         name="shoulder_pan"  joint="shoulder_pan_joint"/>
+    <general class="size3"         name="shoulder_lift" joint="shoulder_lift_joint"/>
+    <general class="size3_limited" name="elbow"         joint="elbow_joint"/>
+    <general class="size1"         name="wrist_1"       joint="wrist_1_joint"/>
+    <general class="size1"         name="wrist_2"       joint="wrist_2_joint"/>
+    <general class="size1"         name="wrist_3"       joint="wrist_3_joint"/>
+
+    <!-- Leap Hand Position Actuators -->
+    <position class="right_leap" name="1"  joint="1"/>
+    <position class="right_leap" name="0"  joint="0"/>
+    <position class="right_leap" name="2"  joint="2"/>
+    <position class="right_leap" name="3"  joint="3"/>
+    <position class="right_leap" name="5"  joint="5"/>
+    <position class="right_leap" name="4"  joint="4"/>
+    <position class="right_leap" name="6"  joint="6"/>
+    <position class="right_leap" name="7"  joint="7"/>
+    <position class="right_leap" name="9"  joint="9"/>
+    <position class="right_leap" name="8"  joint="8"/>
+    <position class="right_leap" name="10" joint="10"/>
+    <position class="right_leap" name="11" joint="11"/>
+    <position class="right_leap" name="12" joint="12"/>
+    <position class="right_leap" name="13" joint="13"/>
+    <position class="right_leap" name="14" joint="14"/>
+    <position class="right_leap" name="15" joint="15"/>
+  </actuator>
+
+  <!-- 7) Leap Hand <contact> Exclusions
+         - Exactly as in the leap hand model -->
+  <contact>
+    <exclude body1="palm_lower" body2="mcp_joint"/>
+    <exclude body1="palm_lower" body2="mcp_joint_2"/>
+    <exclude body1="palm_lower" body2="mcp_joint_3"/>
+    <exclude body1="palm_lower" body2="thumb_dip"/>
+    <exclude body1="palm_lower" body2="thumb_pip"/>
+    <exclude body1="palm_lower" body2="pip_4"/>
+    <exclude body1="mcp_joint"   body2="dip"/>
+    <exclude body1="mcp_joint_3" body2="dip_3"/>
+    <exclude body1="mcp_joint_2" body2="dip_2"/>
+  </contact>
+
+</mujoco>

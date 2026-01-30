@@ -1,0 +1,21 @@
+<mujocoinclude>
+  <asset>
+    <material name="Black_Acrylic"   rgba="0.07036 0.07036 0.07036 1"/>
+    <material name="Cameras_Gray"    rgba="0.296138 0.296138 0.296138 1"/>
+    <material name="IR_Emitter_Lens" rgba="0.28744 0.665387 0.327778 1"/>
+    <material name="IR_Lens"         rgba="0.035601 0.035601 0.035601 1"/>
+    <material name="IR_Rim"          rgba="0.799102 0.806952 0.799103 1"/>
+    <material name="Metal_Casing"    rgba="1 1 1 1"/>
+    <material name="RGB_Pupil"       rgba="0.08714 0.002866 0.009346 1"/>
+
+    <mesh name="d435i_0" file="assets/d435i_0.obj"/>
+    <mesh name="d435i_1" file="assets/d435i_1.obj"/>
+    <mesh name="d435i_2" file="assets/d435i_2.obj"/>
+    <mesh name="d435i_3" file="assets/d435i_3.obj"/>
+    <mesh name="d435i_4" file="assets/d435i_4.obj"/>
+    <mesh name="d435i_5" file="assets/d435i_5.obj"/>
+    <mesh name="d435i_6" file="assets/d435i_6.obj"/>
+    <mesh name="d435i_7" file="assets/d435i_7.obj"/>
+    <mesh name="d435i_8" file="assets/d435i_8.obj"/>
+  </asset>
+</mujocoinclude>

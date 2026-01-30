@@ -1,0 +1,29 @@
+Goal:
+- the agent will be evaluated for rotating the cube by 90, 180, 270, and 360 degrees
+
+TODO:
+-change mvp code to force agent to rotate to specified angles
+-user should be able to pick angular goal (90,180,270,360)
+-need to train on all four angles (4 separate agents)
+-training: computer picks 90, 180, 270, 360 randomly
+    -random practice on all angles during training
+
+-testing: control exactly what to test (specify angle)
+
+
+changes needed
+inhand_env.py:
+    -track how much cube has rotated
+    -pick random goal (90, 180, etc)
+    -give big reward when close to goal, small reward when far away
+
+q_agent.py: the brain
+    -currently has 9 memories about what to do
+    -needs 36 memories (remember different goals)
+    -increase episodes to 2000
+
+create evaluate_agent.py: report card
+    -tests agent on different cube rotations
+    -prints a score like "you got 8 out of 10 correct
+
+rotation management
